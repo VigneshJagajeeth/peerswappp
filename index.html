@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PeerSwap - Buy, Rent, and Exchange Skills</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#6366f1',
+              secondary: '#10B981',
+              accent: '#F59E0B',
+              space: {
+                900: '#0B0B1A',
+                800: '#1A1A2E',
+                700: '#16213E',
+                600: '#0F3460',
+              }
+            },
+            backgroundImage: {
+              'galaxy': "url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=2070&auto=format&fit=crop')",
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      .feature-card {
+        transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      .feature-card.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      
+      /* Dark mode specific styles */
+      body.dark {
+        background-color: #0B0B1A;
+        color: #e2e8f0;
+      }
+      .dark .bg-white {
+        background-color: #1A1A2E;
+        color: #e2e8f0;
+      }
+      .dark .text-gray-900, .dark .text-gray-800 {
+        color: #f8fafc;
+      }
+      .dark .text-gray-700, .dark .text-gray-600 {
+        color: #cbd5e1;
+      }
+      .dark .text-gray-500 {
+        color: #94a3b8;
+      }
+      .dark .bg-gray-50 {
+        background-color: #0B0B1A;
+      }
+      .dark .bg-gray-100 {
+        background-color: #16213E;
+      }
+      .dark .bg-gray-200 {
+        background-color: #0F3460;
+      }
+      .dark .border-gray-200 {
+        border-color: #16213E;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-gray-50">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
