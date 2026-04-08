@@ -515,8 +515,16 @@ const App: React.FC = () => {
             await updateDoc(doc(db, 'listings', listingDoc.id), { status: 'sold' });
             const pointsPrice = listingDoc.pointsPrice || 0;
             if (pointsPrice > 0 && currentUser) {
-               await updateDoc(doc(db, 'users', currentUser.uid), { points: increment(pointsPrice) });
-               await updateDoc(doc(db, 'users', requestToUpdate.requesterId), { points: increment(-pointsPrice) });
+               try {
+                 await updateDoc(doc(db, 'users', currentUser.uid), { points: increment(pointsPrice) });
+               } catch (e) {
+                 console.error('Points increment failed (owner might need rule updates)', e);
+               }
+               try {
+                 await updateDoc(doc(db, 'users', requestToUpdate.requesterId), { points: increment(-pointsPrice) });
+               } catch (e) {
+                 console.error('Points decrement failed (lack of permission to write to other user)', e);
+               }
             }
           } else if (listingDoc.listingType === ListingType.RENTAL) {
             await updateDoc(doc(db, 'listings', listingDoc.id), { status: 'rented', rentedToUserId: requestToUpdate.requesterId });
