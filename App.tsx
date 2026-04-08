@@ -498,11 +498,15 @@ const App: React.FC = () => {
         const hasAcceptedRequest = outgoingRequests.some(
           req => req.listingId === selectedListing?.id && req.status === RequestStatus.ACCEPTED
         );
+        const hasExistingRequest = outgoingRequests.some(
+          req => req.listingId === selectedListing?.id && (req.status === RequestStatus.PENDING || req.status === RequestStatus.ACCEPTED)
+        );
         return selectedListing && (
             <ListingDetailPage
                 listing={selectedListing}
                 currentUser={currentUser}
                 hasAcceptedRequest={hasAcceptedRequest}
+                hasExistingRequest={hasExistingRequest}
                 onBack={handleBackToMarketplace}
                 onUserSelect={handleUserSelect}
                 onPurchase={handlePurchaseListing}
