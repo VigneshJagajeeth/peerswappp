@@ -563,7 +563,7 @@ const App: React.FC = () => {
           if (finalAcceptedOwner && finalAcceptedReq) {
              updates.status = RequestStatus.COMPLETED;
              updates.completedAt = new Date().toISOString();
-             await updateDoc(doc(db, 'listings', req.listingId), { status: 'active' }); 
+             await updateDoc(doc(db, 'listings', req.listingId), { status: 'draft' }); 
           }
           break;
         case 'REJECT':

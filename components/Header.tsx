@@ -60,14 +60,14 @@ const AuthButtons: React.FC<{
   if (currentUser) {
     return (
       <div className={`flex items-center ${isMobile ? 'w-full space-x-2' : 'space-x-2'}`}>
-        <button onClick={onMyAccount} className={`${isMobile ? 'w-full text-center ' : ''}text-gray-600 hover:bg-gray-100 px-4 py-2 rounded-md text-sm font-medium`}>My Account</button>
+        <button onClick={onMyAccount} className={`${isMobile ? 'w-full text-center ' : ''}text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 px-4 py-2 rounded-md text-sm font-medium transition-colors`}>My Account</button>
         <button onClick={onLogout} className={`${isMobile ? 'w-full text-center ' : ''}bg-red-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-600 transition-colors`}>Log Out</button>
       </div>
     );
   }
   return (
     <div className={`flex items-center ${isMobile ? 'w-full space-x-2' : 'space-x-2'}`}>
-      <button onClick={onLogin} className={`${isMobile ? 'w-full text-center ' : ''}text-gray-600 hover:bg-gray-100 px-4 py-2 rounded-md text-sm font-medium`}>Log In</button>
+      <button onClick={onLogin} className={`${isMobile ? 'w-full text-center ' : ''}text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 px-4 py-2 rounded-md text-sm font-medium transition-colors`}>Log In</button>
       <button onClick={onSignUp} className={`${isMobile ? 'w-full text-center ' : ''}bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors`}>Sign Up</button>
     </div>
   );

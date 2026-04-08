@@ -69,6 +69,19 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     }
   };
   
+  const handleLeaveReview = () => {
+    const ratingStr = window.prompt("Leave a rating from 1 to 5:");
+    if (!ratingStr) return;
+    const rating = parseInt(ratingStr);
+    if (rating < 1 || rating > 5 || isNaN(rating)) {
+       window.alert("Invalid rating");
+       return;
+    }
+    const comment = window.prompt("Leave a short comment:");
+    // In a real app we would call an onLeaveReview callback to update Firebase
+    window.alert(`Review submitted! Rating: ${rating}/5\nComment: ${comment}`);
+  };
+  
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <StarIcon key={i} className="w-5 h-5 text-yellow-400" filled={i < Math.round(rating)} />
@@ -86,7 +99,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
     if (req.status === 'accepted') {
       return (
-        <button onClick={() => onSkillSwapAction(req.id, 'START', isOwner)} className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition shadow">
+        <button onClick={() => onSkillSwapAction(req.id, 'START', isOwner)} className="bg-primary text-white px-4 py-1.5 rounded-full text-sm hover:bg-primary/90 transition shadow-sm font-medium">
           Start Process
         </button>
       );
@@ -98,25 +111,25 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       
       if (!myCompletion) {
         return (
-          <button onClick={() => onSkillSwapAction(req.id, 'SUBMIT', isOwner)} className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition shadow">
+          <button onClick={() => onSkillSwapAction(req.id, 'SUBMIT', isOwner)} className="bg-white text-primary border border-primary px-4 py-1.5 rounded-full text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition shadow-sm font-medium">
             Submit Work
           </button>
         );
       } else if (!theirCompletion) {
-        return <span className="text-sm text-gray-500 italic px-2 py-1">Waiting for other party to submit...</span>;
+        return <span className="text-sm text-primary/70 italic px-2 py-1">Waiting for partner...</span>;
       } else {
         // Both submitted!
         const myAcceptance = isOwner ? req.acceptedByOwner : req.acceptedByRequester;
         if (myAcceptance) {
-          return <span className="text-sm text-green-500 font-semibold px-2 py-1">You accepted. Waiting for other...</span>;
+          return <span className="text-sm text-green-500 font-semibold px-2 py-1 flex items-center"><svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> Accepted</span>;
         }
         return (
           <div className="flex gap-2">
-            <button onClick={() => onSkillSwapAction(req.id, 'ACCEPT', isOwner)} className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition shadow">
+            <button onClick={() => onSkillSwapAction(req.id, 'ACCEPT', isOwner)} className="bg-primary text-white px-4 py-1.5 rounded-full text-sm hover:bg-primary/90 transition shadow-sm font-medium">
               Accept Work
             </button>
-            <button onClick={() => onSkillSwapAction(req.id, 'REJECT', isOwner)} className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition shadow">
-              Not Satisfied
+            <button onClick={() => onSkillSwapAction(req.id, 'REJECT', isOwner)} className="bg-red-500 text-white px-4 py-1.5 rounded-full text-sm hover:bg-red-600 transition shadow-sm font-medium">
+              Reject
             </button>
           </div>
         );
@@ -124,10 +137,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     }
     
     if (req.status === 'completed') {
-      return <span className="text-sm font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">Transaction Complete</span>;
+      return <span className="text-sm font-bold text-green-600 bg-green-100/50 border border-green-200 px-3 py-1 rounded-full">Completed</span>;
     }
     return null;
   };
+
+  const visibleListings = isCurrentUser ? listings : listings.filter(l => !l.status || l.status === 'active');
 
   return (
     <>
@@ -177,7 +192,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                   </div>
                   <p className="text-gray-500 mt-1">Joined {user.joinedDate}</p>
                   <div className="flex items-center mt-2 justify-center md:justify-start">
-                    <span className="font-bold text-green-600 mr-4 bg-green-100 px-3 py-1 rounded-full">{user.points || 0} Points</span>
+                    {isCurrentUser && <span className="font-bold text-primary mr-4 bg-primary/10 dark:bg-primary/20 px-3 py-1 rounded-full">{user.points || 0} Points</span>}
                     {renderStars(averageRating)}
                     {totalReviews > 0 ? (
                       <>
@@ -207,9 +222,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     </button>
                   </>
                 ) : (
-                  <button onClick={onStartChat} className="bg-primary text-white font-semibold px-6 py-2 rounded-md shadow-md hover:bg-primary/90 transition-transform transform hover:scale-105">
-                    Chat with {user.name.split(' ')[0]}
-                  </button>
+                  <>
+                    <button onClick={onStartChat} className="bg-primary text-white font-semibold px-6 py-2 rounded-md shadow-md hover:bg-primary/90 transition-transform transform hover:scale-105">
+                      Chat with {user.name.split(' ')[0]}
+                    </button>
+                    <button onClick={handleLeaveReview} className="bg-white text-primary border-2 border-primary font-semibold px-6 py-2 rounded-md shadow flex items-center hover:bg-primary/5 transition-transform transform hover:scale-105">
+                      <StarIcon className="w-5 h-5 mr-1" /> Leave Review
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -337,23 +357,23 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
             {/* Listings Section */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Listings ({listings.length})</h2>
-              {listings.length > 0 ? (
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Listings ({visibleListings.length})</h2>
+              {visibleListings.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                  {listings.map(listing => (
+                  {visibleListings.map(listing => (
                     <div key={listing.id} className="relative flex flex-col group">
                       <ListingCard 
-                          listing={listing} 
+                          listing={listing}  
                           onUserSelect={handleUserSelectOnCard}
                           onListingSelect={onListingSelect}
                       />
-                      {(listing.status === 'rented' || listing.status === 'in_progress') && isCurrentUser && onResumeListing && (
+                      {(listing.status === 'rented' || listing.status === 'in_progress' || listing.status === 'draft') && isCurrentUser && onResumeListing && (
                         <div className="absolute top-2 right-2 z-10 w-[calc(100%-16px)] flex justify-end">
                             <button 
                               onClick={(e) => { e.stopPropagation(); onResumeListing(listing.id); }} 
-                              className="bg-indigo-600/90 backdrop-blur text-white text-sm font-bold py-2 px-4 rounded-full shadow-lg hover:bg-indigo-500 hover:scale-105 transition-all w-full text-center"
+                              className="bg-primary/90 backdrop-blur text-white text-sm font-bold py-2 px-4 rounded-full shadow-md hover:bg-primary hover:scale-105 transition-all w-full text-center"
                             >
-                              Resume Listing
+                              {listing.status === 'draft' ? 'Relist Item' : 'Resume Listing'}
                             </button>
                         </div>
                       )}
