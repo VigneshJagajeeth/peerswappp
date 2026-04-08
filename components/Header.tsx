@@ -36,7 +36,7 @@ const SearchBarInput: React.FC<{
       value={searchQuery}
       onChange={(e) => onSearchChange(e.target.value)}
       placeholder="Search by title..."
-      className="block w-full bg-gray-100 border border-transparent rounded-full py-2 pl-10 pr-10 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary transition"
+      className="block w-full bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-full py-2 pl-10 pr-10 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:border-primary focus:ring-1 focus:ring-primary transition"
       aria-label="Search"
     />
     <div className="absolute inset-y-0 right-0 pr-1 flex items-center">
