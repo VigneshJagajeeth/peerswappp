@@ -4,6 +4,7 @@ import { Listing, ListingType, PaymentType, UserProfile } from '../types';
 import CashIcon from '../components/icons/CashIcon';
 import SkillIcon from '../components/icons/SkillIcon';
 import VerifiedIcon from '../components/icons/VerifiedIcon';
+import { ArrowRightLeft } from 'lucide-react';
 
 interface ListingDetailPageProps {
   listing: Listing;
@@ -83,8 +84,8 @@ const ListingDetailPage: React.FC<ListingDetailPageProps> = ({ listing, currentU
               {imageUrl ? (
                 <img src={imageUrl} alt={title} className="w-full h-full object-cover min-h-[300px] md:min-h-[100%]" />
               ) : (
-                <div className="w-full h-full min-h-[300px] bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 text-lg">
-                  No Image Available
+                <div className="w-full h-full min-h-[300px] bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+                  <ArrowRightLeft className="h-32 w-32 text-gray-300 dark:text-gray-600 opacity-50" strokeWidth={1.5} />
                 </div>
               )}
               {isVerified && listingType === ListingType.SKILL && (

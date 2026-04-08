@@ -3,6 +3,7 @@ import { Listing, ListingType, PaymentType } from '../types';
 import CashIcon from './icons/CashIcon';
 import SkillIcon from './icons/SkillIcon';
 import VerifiedIcon from './icons/VerifiedIcon';
+import { ArrowRightLeft } from 'lucide-react';
 
 interface ListingCardProps {
   listing: Listing;
@@ -26,7 +27,9 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onUserSelect, onList
             {imageUrl ? (
               <img className="h-56 w-full object-cover" src={imageUrl} alt={title} />
             ) : (
-              <div className="h-56 w-full bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">No Image</div>
+              <div className="h-56 w-full bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
+                <ArrowRightLeft className="h-16 w-16 text-gray-300 dark:text-gray-600 opacity-50" strokeWidth={1.5} />
+              </div>
             )}
         </button>
         <div className={`absolute top-2 right-2 text-xs font-semibold px-2.5 py-1 rounded-full ${typeColors[listingType]}`}>

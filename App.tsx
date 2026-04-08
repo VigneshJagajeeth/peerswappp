@@ -405,13 +405,15 @@ const App: React.FC = () => {
   };
 
   const recommendedListings = useMemo(() => {
-    return allListings.slice(0, 5);
-  }, [allListings]);
+    const availableListings = currentUser ? allListings.filter(l => l.userId !== currentUser.uid) : allListings;
+    return availableListings.slice(0, 5);
+  }, [allListings, currentUser]);
 
   const filteredListings = useMemo(() => {
+    const availableListings = currentUser ? allListings.filter(l => l.userId !== currentUser.uid) : allListings;
     const byCategory = activeFilter === 'ALL'
-      ? allListings
-      : allListings.filter(listing => listing.listingType === activeFilter);
+      ? availableListings
+      : availableListings.filter(listing => listing.listingType === activeFilter);
 
     if (!submittedQuery.trim()) {
       return byCategory;
@@ -421,7 +423,7 @@ const App: React.FC = () => {
     return byCategory.filter(listing => 
       listing.title.toLowerCase().includes(lowercasedQuery)
     );
-  }, [activeFilter, submittedQuery, allListings]);
+  }, [activeFilter, submittedQuery, allListings, currentUser]);
   
   const ListingsGrid = ({ listings }: { listings: Listing[] }) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">

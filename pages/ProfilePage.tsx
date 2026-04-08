@@ -178,42 +178,40 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                               </p>
                               <p className="text-sm text-gray-500">Status: <span className="font-semibold capitalize">{req.status}</span></p>
                             </div>
-                            {req.status === RequestStatus.PENDING && onRequestAction && (
-                              <div className="flex space-x-2 mt-2 sm:mt-0">
+                            <div className="flex space-x-2 mt-2 sm:mt-0 flex-wrap gap-y-2">
+                              {req.status?.toLowerCase() === 'pending' && onRequestAction && (
+                                <>
+                                  <button 
+                                    onClick={() => onRequestAction(req.id, 'accepted')}
+                                    className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition-colors"
+                                  >
+                                    Accept
+                                  </button>
+                                  <button 
+                                    onClick={() => onRequestAction(req.id, 'rejected')}
+                                    className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+                                  >
+                                    Reject
+                                  </button>
+                                </>
+                              )}
+                              {req.status?.toLowerCase() === 'accepted' && onStartChatWithUser && (
                                 <button 
-                                  onClick={() => onRequestAction(req.id, 'accepted')}
-                                  className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
+                                  onClick={() => onStartChatWithUser(req.requesterId)}
+                                  className="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary/90 transition-colors shadow-sm"
                                 >
-                                  Accept
+                                  Chat with Requester
                                 </button>
+                              )}
+                              {onViewListing && (
                                 <button 
-                                  onClick={() => onRequestAction(req.id, 'rejected')}
-                                  className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                                  onClick={() => onViewListing(req.listingId)}
+                                  className="bg-gray-100 text-gray-800 border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors shadow-sm"
                                 >
-                                  Reject
+                                  View Listing
                                 </button>
-                              </div>
-                            )}
-                            {req.status === RequestStatus.ACCEPTED && (
-                                <div className="flex space-x-2 mt-2 sm:mt-0">
-                                  {onStartChatWithUser && (
-                                    <button 
-                                      onClick={() => onStartChatWithUser(req.requesterId)}
-                                      className="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary/90 transition-colors"
-                                    >
-                                      Chat with Requester
-                                    </button>
-                                  )}
-                                  {onViewListing && (
-                                    <button 
-                                      onClick={() => onViewListing(req.listingId)}
-                                      className="bg-gray-100 text-gray-800 border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors"
-                                    >
-                                      View Listing
-                                    </button>
-                                  )}
-                                </div>
-                            )}
+                              )}
+                            </div>
                           </div>
                         </li>
                       ))}
@@ -237,26 +235,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                               </p>
                               <p className="text-sm text-gray-500">Status: <span className="font-semibold capitalize">{req.status}</span></p>
                             </div>
-                            {req.status === RequestStatus.ACCEPTED && (
-                                <div className="flex space-x-2 mt-2 sm:mt-0">
-                                  {onStartChatWithUser && (
-                                    <button 
-                                      onClick={() => onStartChatWithUser(req.ownerId)}
-                                      className="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary/90 transition-colors"
-                                    >
-                                      Chat with Owner
-                                    </button>
-                                  )}
-                                  {onViewListing && (
-                                    <button 
-                                      onClick={() => onViewListing(req.listingId)}
-                                      className="bg-gray-100 text-gray-800 border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors"
-                                    >
-                                      View Listing
-                                    </button>
-                                  )}
-                                </div>
-                            )}
+                            <div className="flex space-x-2 mt-2 sm:mt-0 flex-wrap gap-y-2">
+                              {req.status?.toLowerCase() === 'accepted' && onStartChatWithUser && (
+                                <button 
+                                  onClick={() => onStartChatWithUser(req.ownerId)}
+                                  className="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary/90 transition-colors shadow-sm"
+                                >
+                                  Chat with Owner
+                                </button>
+                              )}
+                              {onViewListing && (
+                                <button 
+                                  onClick={() => onViewListing(req.listingId)}
+                                  className="bg-gray-100 text-gray-800 border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors shadow-sm"
+                                >
+                                  View Listing
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </li>
                       ))}

@@ -123,7 +123,7 @@ const Header: React.FC<HeaderProps> = ({
                 <div className="bg-gradient-to-br from-primary to-accent p-2 rounded-xl shadow-md group-hover:shadow-lg transition-all duration-300 transform group-hover:scale-105">
                   <ArrowRightLeft className="h-6 w-6 text-white" strokeWidth={2.5} />
                 </div>
-                <span className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 tracking-tight">PeerSwap</span>
+                <span className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent tracking-tight">PeerSwap</span>
               </button>
             </div>
             <div className="hidden md:block">
