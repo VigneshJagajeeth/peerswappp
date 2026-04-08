@@ -584,9 +584,9 @@ const App: React.FC = () => {
 
              if (isOwner) {
                 const wantsToRelist = window.confirm("Transaction Completed successfully!\n\nDo you want to instantly relist your item to the active marketplace? (Press Cancel to keep it as a draft in your profile)");
-                await updateDoc(doc(db, 'listings', req.listingId), { status: wantsToRelist ? 'active' : 'draft' }); 
+                try { await updateDoc(doc(db, 'listings', req.listingId), { status: wantsToRelist ? 'active' : 'draft' }); } catch(err) { console.error("Could not relist item securely", err); }
              } else {
-                await updateDoc(doc(db, 'listings', req.listingId), { status: 'draft' }); 
+                try { await updateDoc(doc(db, 'listings', req.listingId), { status: 'draft' }); } catch(err) { console.error("Buyer lacked permission to turn listing to draft natively. The owner will handle it.", err); }
              }
           }
           break;
@@ -599,7 +599,9 @@ const App: React.FC = () => {
       }
       
       await updateDoc(requestRef, updates);
-      showToast('Skill Swap updated successfully!');
+      const listingDoc = allListings.find(l => l.id === req.listingId);
+      const transactionType = listingDoc?.listingType === ListingType.SALE ? 'Order' : (listingDoc?.listingType === ListingType.RENTAL ? 'Rental' : 'Skill Swap');
+      showToast(`${transactionType} updated successfully!`);
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, 'requests');
     }
