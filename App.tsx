@@ -92,6 +92,7 @@ const App: React.FC = () => {
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [isSignUpModalOpen, setSignUpModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [targetUserReviews, setTargetUserReviews] = useState<Review[]>([]);
 
   const [isDarkMode, setIsDarkMode] = useState(false);
 
@@ -159,6 +160,21 @@ const App: React.FC = () => {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  useEffect(() => {
+    let unsubscribeReviews: () => void;
+    if (view === 'profile' && selectedUser) {
+      const q = query(collection(db, 'reviews'), where('targetUserId', '==', selectedUser.uid));
+      unsubscribeReviews = onSnapshot(q, (snapshot) => {
+        setTargetUserReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review)));
+      });
+    } else {
+      setTargetUserReviews([]);
+    }
+    return () => {
+      if (unsubscribeReviews) unsubscribeReviews();
+    };
+  }, [view, selectedUser?.uid]);
 
   useEffect(() => {
     let unsubscribeIncoming: () => void;
@@ -586,6 +602,41 @@ const App: React.FC = () => {
     }
   };
 
+  const handleLeaveReview = async (rating: number, comment: string) => {
+    if (!currentUser || !selectedUser) return;
+    try {
+      const newReview: Omit<Review, 'id'> = {
+        authorId: currentUser.uid,
+        authorName: currentUser.name,
+        authorAvatarUrl: currentUser.avatarUrl,
+        rating,
+        comment,
+        date: new Date().toISOString(),
+        targetUserId: selectedUser.uid
+      };
+      await addDoc(collection(db, 'reviews'), newReview);
+
+      const newTotal = (selectedUser.totalReviews || 0) + 1;
+      const currentAvg = selectedUser.averageRating || 0;
+      const newAvg = ((currentAvg * (newTotal - 1)) + rating) / newTotal;
+
+      await updateDoc(doc(db, 'users', selectedUser.uid), {
+         totalReviews: newTotal,
+         averageRating: newAvg
+      });
+
+      setSelectedUser({
+        ...selectedUser,
+        totalReviews: newTotal,
+        averageRating: newAvg
+      });
+
+      showToast('Review submitted successfully!');
+    } catch (error) {
+       handleFirestoreError(error, OperationType.CREATE, 'reviews');
+    }
+  };
+
   const renderContent = () => {
     switch(view) {
       case 'profile':
@@ -596,10 +647,12 @@ const App: React.FC = () => {
             allListings={allListings}
             incomingRequests={incomingRequests}
             outgoingRequests={outgoingRequests}
+            reviews={targetUserReviews}
             onRequestAction={handleRequestAction}
             onRevokeRequest={handleRevokeRequest}
             onResumeListing={handleResumeListing}
             onSkillSwapAction={handleSkillSwapAction}
+            onLeaveReview={handleLeaveReview}
             onBack={handleBackToMarketplace}
             isCurrentUser={selectedUser.uid === currentUser?.uid}
             onAddNewListing={handleAddNewListing}

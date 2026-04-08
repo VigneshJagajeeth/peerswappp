@@ -12,10 +12,12 @@ interface ProfilePageProps {
   allListings?: Listing[];
   incomingRequests?: ListingRequest[];
   outgoingRequests?: ListingRequest[];
+  reviews?: Review[];
   onRequestAction?: (requestId: string, action: 'accepted' | 'rejected') => void;
   onRevokeRequest?: (requestId: string) => void;
   onResumeListing?: (listingId: string) => void;
   onSkillSwapAction?: (requestId: string, action: 'START' | 'SUBMIT' | 'ACCEPT' | 'REJECT', isOwner: boolean) => void;
+  onLeaveReview?: (rating: number, comment: string) => void;
   onBack: () => void;
   isCurrentUser: boolean;
   onAddNewListing: (listing: Omit<Listing, 'id' | 'userId' | 'userName' | 'userAvatarUrl' | 'imageUrl' | 'createdAt'>) => void;
@@ -33,10 +35,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   allListings = [],
   incomingRequests = [], 
   outgoingRequests = [], 
+  reviews = [],
   onRequestAction, 
   onRevokeRequest,
   onResumeListing,
   onSkillSwapAction,
+  onLeaveReview,
   onBack, 
   isCurrentUser, 
   onAddNewListing, 
@@ -167,7 +171,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                <button onClick={() => setIsReviewOpen(false)} className="px-5 py-2.5 font-semibold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Cancel</button>
                <button 
                   onClick={() => {
-                     window.alert(`Review Submitted!\nRating: ${reviewRating}\nComment: ${reviewComment}`);
+                     if (onLeaveReview) {
+                        onLeaveReview(reviewRating, reviewComment);
+                     }
                      setIsReviewOpen(false);
                   }}
                   disabled={reviewRating === 0}
@@ -425,11 +431,35 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
             {/* Reviews Section */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Reviews ({totalReviews})</h2>
-              <div className="text-center py-16 text-gray-500 bg-white rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold">No Reviews Yet</h3>
-                <p className="mt-2">This user hasn't received any reviews.</p>
-              </div>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Reviews ({reviews.length})</h2>
+              {reviews.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {reviews.map(review => (
+                     <div key={review.id} className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 flex flex-col hover:shadow-lg transition">
+                       <div className="flex items-center mb-4">
+                         <img src={review.authorAvatarUrl} alt={review.authorName} className="w-12 h-12 rounded-full mr-4 border border-gray-200 dark:border-gray-600 shadow-sm" />
+                         <div>
+                           <h4 className="font-bold text-gray-900 dark:text-white">{review.authorName}</h4>
+                           <div className="flex text-yellow-400">
+                             {Array.from({ length: 5 }, (_, i) => (
+                               <StarIcon key={i} className="w-4 h-4" filled={i < review.rating} />
+                             ))}
+                           </div>
+                         </div>
+                       </div>
+                       {review.comment && <p className="text-gray-600 dark:text-gray-300 italic mb-4 flex-grow">"{review.comment}"</p>}
+                       <div className="text-xs text-gray-400 dark:text-gray-500 mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+                         {new Date(review.date).toLocaleDateString()}
+                       </div>
+                     </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 text-gray-500 bg-white/50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700">
+                  <h3 className="text-xl font-semibold dark:text-gray-300">No Reviews Yet</h3>
+                  <p className="mt-2 text-gray-400">This user hasn't received any reviews.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
