@@ -12,6 +12,7 @@ interface ProfilePageProps {
   incomingRequests?: ListingRequest[];
   outgoingRequests?: ListingRequest[];
   onRequestAction?: (requestId: string, action: 'accepted' | 'rejected') => void;
+  onRevokeRequest?: (requestId: string) => void;
   onBack: () => void;
   isCurrentUser: boolean;
   onAddNewListing: (listing: Omit<Listing, 'id' | 'userId' | 'userName' | 'userAvatarUrl' | 'imageUrl' | 'createdAt'>) => void;
@@ -29,6 +30,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   incomingRequests = [], 
   outgoingRequests = [], 
   onRequestAction, 
+  onRevokeRequest,
   onBack, 
   isCurrentUser, 
   onAddNewListing, 
@@ -250,6 +252,18 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                   className="bg-gray-100 text-gray-800 border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors shadow-sm"
                                 >
                                   View Listing
+                                </button>
+                              )}
+                              {req.createdAt && (new Date().getTime() - new Date(req.createdAt).getTime() < 24 * 60 * 60 * 1000) && onRevokeRequest && (
+                                <button 
+                                  onClick={() => {
+                                    if (window.confirm('Are you sure you want to revoke this request?')) {
+                                      onRevokeRequest(req.id);
+                                    }
+                                  }}
+                                  className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors shadow-sm"
+                                >
+                                  Revoke
                                 </button>
                               )}
                             </div>

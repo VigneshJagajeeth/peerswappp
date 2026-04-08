@@ -10,6 +10,7 @@ interface ListingDetailPageProps {
   listing: Listing;
   currentUser: UserProfile | null;
   hasAcceptedRequest: boolean;
+  hasExistingRequest?: boolean;
   onBack: () => void;
   onUserSelect: (userId: string) => void;
   onPurchase: (listingId: string) => void;
@@ -17,7 +18,7 @@ interface ListingDetailPageProps {
   onDelete?: (listingId: string) => void;
 }
 
-const ListingDetailPage: React.FC<ListingDetailPageProps> = ({ listing, currentUser, hasAcceptedRequest, onBack, onUserSelect, onPurchase, onStartChat, onDelete }) => {
+const ListingDetailPage: React.FC<ListingDetailPageProps> = ({ listing, currentUser, hasAcceptedRequest, hasExistingRequest, onBack, onUserSelect, onPurchase, onStartChat, onDelete }) => {
   const { id, title, description, imageUrl, listingType, category, location, tradePreferences, isVerified, paymentType, pointsPrice, skillPrice, userId, userName, userAvatarUrl } = listing;
 
   const typeColors: { [key in ListingType]: { bg: string; text: string; border: string; } } = {
@@ -58,6 +59,18 @@ const ListingDetailPage: React.FC<ListingDetailPageProps> = ({ listing, currentU
         priceText = ''; // No price for skill swap button
         break;
     }
+    
+    if (hasExistingRequest) {
+      return (
+        <button 
+          disabled
+          className="w-full bg-gray-400 text-white font-bold py-3 px-6 rounded-lg shadow cursor-not-allowed"
+        >
+          Already Requested
+        </button>
+      );
+    }
+
     return (
       <button 
         onClick={() => onPurchase(id)}

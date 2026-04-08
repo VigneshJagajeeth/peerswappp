@@ -455,6 +455,15 @@ const App: React.FC = () => {
     }
   };
 
+  const handleRevokeRequest = async (requestId: string) => {
+    try {
+      await deleteDoc(doc(db, 'requests', requestId));
+      showToast('Request revoked successfully.');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'requests');
+    }
+  };
+
   const renderContent = () => {
     switch(view) {
       case 'profile':
@@ -465,6 +474,7 @@ const App: React.FC = () => {
             incomingRequests={incomingRequests}
             outgoingRequests={outgoingRequests}
             onRequestAction={handleRequestAction}
+            onRevokeRequest={handleRevokeRequest}
             onBack={handleBackToMarketplace}
             isCurrentUser={selectedUser.uid === currentUser?.uid}
             onAddNewListing={handleAddNewListing}
