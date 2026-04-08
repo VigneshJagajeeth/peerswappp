@@ -5,6 +5,7 @@ import { collection, onSnapshot, doc, getDoc, addDoc, query, orderBy, where, upd
 import { auth, db } from './firebase';
 import Header from './components/Header';
 import Hero from './components/Hero';
+import Starfield from './components/Starfield';
 import ListingCard from './components/ListingCard';
 import Footer from './components/Footer';
 import ProfilePage from './pages/ProfilePage';
@@ -91,6 +92,25 @@ const App: React.FC = () => {
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [isSignUpModalOpen, setSignUpModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    // Check initial preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setIsDarkMode(true);
+      document.body.classList.add('dark');
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    if (!isDarkMode) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  };
 
   const showToast = (message: string) => {
     setToastMessage(message);
@@ -208,7 +228,6 @@ const App: React.FC = () => {
         userId: currentUser.uid,
         userName: currentUser.name,
         userAvatarUrl: currentUser.avatarUrl,
-        imageUrl: `https://picsum.photos/seed/${Date.now()}/600/400`,
         createdAt: new Date().toISOString()
       };
 
@@ -268,6 +287,36 @@ const App: React.FC = () => {
     }
     setChatUser({ id: userId, name: userName });
     setView('chat');
+  };
+  
+  const handleStartChatWithUser = async (userId: string) => {
+    if (!currentUser) return;
+    const user = await fetchUser(userId);
+    if (user) {
+      setChatUser({ id: user.uid, name: user.name });
+      setView('chat');
+    } else {
+      showToast('Could not find user profile.');
+    }
+  };
+
+  const handleViewListing = async (listingId: string) => {
+    const listing = allListings.find(l => l.id === listingId);
+    if (listing) {
+      handleListingSelect(listing);
+    } else {
+      // Fetch from db if not in current list
+      try {
+        const docSnap = await getDoc(doc(db, 'listings', listingId));
+        if (docSnap.exists()) {
+          handleListingSelect({ id: docSnap.id, ...docSnap.data() } as Listing);
+        } else {
+          showToast('Listing no longer exists.');
+        }
+      } catch (e) {
+        showToast('Error finding listing.');
+      }
+    }
   };
   
   const handleGoHome = () => {
@@ -330,8 +379,22 @@ const App: React.FC = () => {
       });
       showToast('Added 100 points to your account!');
       
-      // Update local state for immediate feedback
       const updatedUser = { ...currentUser, points: (currentUser.points || 0) + 100 };
+      setCurrentUser(updatedUser);
+      if (selectedUser?.uid === currentUser.uid) {
+        setSelectedUser(updatedUser);
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'users');
+    }
+  };
+
+  const handleUpdateProfile = async (data: { name: string; bio: string; avatarUrl: string }) => {
+    if (!currentUser) return;
+    try {
+      await updateDoc(doc(db, 'users', currentUser.uid), data);
+      showToast('Profile updated successfully!');
+      const updatedUser = { ...currentUser, ...data };
       setCurrentUser(updatedUser);
       if (selectedUser?.uid === currentUser.uid) {
         setSelectedUser(updatedUser);
@@ -405,7 +468,10 @@ const App: React.FC = () => {
             onAddNewListing={handleAddNewListing}
             onListingSelect={handleListingSelect}
             onAddPoints={handleAddPoints}
+            onUpdateProfile={handleUpdateProfile}
             onStartChat={() => handleStartChat(selectedUser.uid, selectedUser.name)}
+            onStartChatWithUser={handleStartChatWithUser}
+            onViewListing={handleViewListing}
           />
         );
       case 'listingDetail': {
@@ -445,7 +511,12 @@ const App: React.FC = () => {
              <>
                <Recommendations listings={recommendedListings} onListingSelect={handleListingSelect} />
                <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                 <h2 className="text-3xl font-bold text-gray-800 mb-8">All Listings</h2>
+                 <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">
+                   {activeFilter === 'ALL' ? 'All Listings' : 
+                    activeFilter === ListingType.SALE ? 'Buy Listings' :
+                    activeFilter === ListingType.RENTAL ? 'Rentals' :
+                    'Skill Exchange'}
+                 </h2>
                  <ListingsGrid listings={filteredListings} />
                </div>
              </>
@@ -471,12 +542,12 @@ const App: React.FC = () => {
               <>
                 <Hero onGetStarted={() => setSignUpModalOpen(true)} />
                 <FeaturesSection />
-                <div className="bg-white">
+                <div className="bg-white/80 dark:bg-[#050510]/80 backdrop-blur-md">
                   <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <h2 className="text-3xl font-bold text-gray-800 text-center mb-4">
+                    <h2 className="text-3xl font-bold text-gray-800 dark:text-white text-center mb-4">
                       Explore the Marketplace
                     </h2>
-                    <p className="text-center text-gray-600 max-w-2xl mx-auto mb-8">
+                    <p className="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-8">
                       Find what you need or offer your skills. Filter by category to get started.
                     </p>
                     
@@ -497,7 +568,8 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col font-sans">
+    <div className="min-h-screen flex flex-col font-sans relative z-0">
+      <Starfield isDarkMode={isDarkMode} />
       <Header 
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -509,8 +581,10 @@ const App: React.FC = () => {
         onMyAccount={handleMyAccount}
         onFilterSelect={handleFilterSelect}
         onGoHome={handleGoHome}
+        isDarkMode={isDarkMode}
+        toggleDarkMode={toggleDarkMode}
       />
-      <main className="flex-grow">
+      <main className="flex-grow z-10 relative">
         {renderContent()}
       </main>
       <Footer />

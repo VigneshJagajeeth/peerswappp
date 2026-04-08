@@ -22,8 +22,12 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onUserSelect, onList
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-2xl transition-shadow duration-300 flex flex-col group border border-transparent dark:border-gray-700">
       <div className="relative">
-        <button onClick={() => onListingSelect(listing)} className="block w-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-t-xl">
-            <img className="h-56 w-full object-cover" src={imageUrl} alt={title} />
+        <button onClick={() => onListingSelect(listing)} className="block w-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-t-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
+            {imageUrl ? (
+              <img className="h-56 w-full object-cover" src={imageUrl} alt={title} />
+            ) : (
+              <div className="h-56 w-full bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">No Image</div>
+            )}
         </button>
         <div className={`absolute top-2 right-2 text-xs font-semibold px-2.5 py-1 rounded-full ${typeColors[listingType]}`}>
           {listingType}
@@ -45,7 +49,9 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onUserSelect, onList
           {(paymentType === PaymentType.POINTS || paymentType === PaymentType.BOTH) && pointsPrice != null && (
              <div className="flex items-center text-gray-700 dark:text-gray-300">
                 <CashIcon className="w-5 h-5 mr-2 text-secondary"/>
-                <span className="font-semibold text-lg">{pointsPrice} Points</span>
+                <span className="font-semibold text-lg">
+                  {pointsPrice} Points {listingType === ListingType.RENTAL && listing.pointsPriceDuration ? `/ ${listing.pointsPriceDuration}` : ''}
+                </span>
              </div>
           )}
            {(paymentType === PaymentType.SKILL || paymentType === PaymentType.BOTH) && skillPrice && (

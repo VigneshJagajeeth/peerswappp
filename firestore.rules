@@ -29,7 +29,7 @@ service cloud.firestore {
     }
 
     match /chats/{threadId}/messages/{messageId} {
-      allow read, write: if isAuthenticated() && threadId.matches('.*' + request.auth.uid + '.*');
+      allow read, write: if isAuthenticated();
     }
   }
 }

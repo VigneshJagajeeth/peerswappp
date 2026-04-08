@@ -79,8 +79,14 @@ const ListingDetailPage: React.FC<ListingDetailPageProps> = ({ listing, currentU
         <div className="bg-white rounded-xl shadow-xl overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2">
             {/* Image Section */}
-            <div className="relative">
-              <img src={imageUrl} alt={title} className="w-full h-full object-cover min-h-[300px] md:h-full" />
+            <div className="relative h-full">
+              {imageUrl ? (
+                <img src={imageUrl} alt={title} className="w-full h-full object-cover min-h-[300px] md:min-h-[100%]" />
+              ) : (
+                <div className="w-full h-full min-h-[300px] bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 text-lg">
+                  No Image Available
+                </div>
+              )}
               {isVerified && listingType === ListingType.SKILL && (
                 <div className="absolute top-4 left-4" title="Verified Skill">
                     <VerifiedIcon className="w-8 h-8 text-white bg-primary rounded-full p-1 shadow-lg" />
@@ -107,7 +113,9 @@ const ListingDetailPage: React.FC<ListingDetailPageProps> = ({ listing, currentU
                         <CashIcon className="w-6 h-6 mr-3 text-secondary"/>
                         <div>
                             <span className="font-semibold text-xl">{pointsPrice}</span>
-                            <span className="text-sm text-gray-500 dark:text-gray-400"> (Points)</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                               {listingType === ListingType.RENTAL && listing.pointsPriceDuration ? ` Points / ${listing.pointsPriceDuration}` : ' Points'}
+                            </span>
                         </div>
                     </div>
                 )}

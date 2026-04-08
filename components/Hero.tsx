@@ -1,6 +1,5 @@
 
 import React from 'react';
-import Starfield from './Starfield';
 import { motion } from 'motion/react';
 
 interface HeroProps {
@@ -9,9 +8,7 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({ onGetStarted }) => {
   return (
-    <div className="relative bg-[#050510] overflow-hidden min-h-[80vh] flex items-center justify-center">
-      <Starfield />
-      
+    <div className="relative bg-transparent overflow-hidden min-h-[80vh] flex items-center justify-center">
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 text-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

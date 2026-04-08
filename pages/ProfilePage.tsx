@@ -18,6 +18,9 @@ interface ProfilePageProps {
   onListingSelect: (listing: Listing) => void;
   onAddPoints: () => void;
   onStartChat?: () => void;
+  onUpdateProfile?: (data: { name: string; bio: string; avatarUrl: string }) => void;
+  onStartChatWithUser?: (userId: string) => void;
+  onViewListing?: (listingId: string) => void;
 }
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ 
@@ -31,15 +34,31 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   onAddNewListing, 
   onListingSelect, 
   onAddPoints,
-  onStartChat
+  onStartChat,
+  onUpdateProfile,
+  onStartChatWithUser,
+  onViewListing
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editName, setEditName] = useState(user.name);
+  const [editBio, setEditBio] = useState(user.bio);
+  const [editAvatarUrl, setEditAvatarUrl] = useState(user.avatarUrl);
+
   const totalReviews = user.totalReviews || 0;
   const averageRating = user.averageRating || 0;
 
   const handleAddListing = (listingData: Omit<Listing, 'id' | 'userId' | 'userName' | 'userAvatarUrl' | 'imageUrl' | 'createdAt'>) => {
     onAddNewListing(listingData);
     setIsModalOpen(false);
+  };
+  
+  const handleProfileSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onUpdateProfile) {
+       onUpdateProfile({ name: editName, bio: editBio, avatarUrl: editAvatarUrl });
+       setIsEditingProfile(false);
+    }
   };
   
   const renderStars = (rating: number) => {
@@ -74,25 +93,53 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
               />
             </div>
             <div className="mt-4 md:mt-0 flex-grow">
-              <div className="flex items-center justify-center md:justify-start space-x-2">
-                <h1 className="text-3xl font-bold text-gray-900">{user.name}</h1>
-                {user.isAccountVerified && <VerifiedIcon className="w-7 h-7 text-primary" title="Verified Account" />}
-              </div>
-              <p className="text-gray-500 mt-1">Joined {user.joinedDate}</p>
-              <div className="flex items-center mt-2 justify-center md:justify-start">
-                <span className="font-bold text-green-600 mr-4 bg-green-100 px-3 py-1 rounded-full">{user.points || 0} Points</span>
-                {renderStars(averageRating)}
-                {totalReviews > 0 ? (
-                  <>
-                    <span className="ml-2 text-gray-600 font-semibold">{averageRating.toFixed(1)}</span>
-                    <span className="ml-1 text-gray-500">({totalReviews} reviews)</span>
-                  </>
-                ) : (
-                  <span className="ml-2 text-gray-500">No reviews yet</span>
-                )}
-              </div>
-              <p className="text-gray-700 mt-4 max-w-xl text-center md:text-left">{user.bio}</p>
+              {isEditingProfile ? (
+                 <form onSubmit={handleProfileSave} className="space-y-3 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Name</label>
+                      <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Bio</label>
+                      <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary" rows={2}/>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Avatar URL</label>
+                        <input type="url" value={editAvatarUrl} onChange={(e) => setEditAvatarUrl(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary" />
+                    </div>
+                    <div className="flex gap-2">
+                        <button type="submit" className="bg-primary text-white font-semibold px-4 py-2 rounded-md hover:bg-primary/90">Save</button>
+                        <button type="button" onClick={() => setIsEditingProfile(false)} className="bg-gray-200 text-gray-800 font-semibold px-4 py-2 rounded-md hover:bg-gray-300">Cancel</button>
+                    </div>
+                 </form>
+              ) : (
+                <>
+                  <div className="flex items-center justify-center md:justify-start space-x-2">
+                    <h1 className="text-3xl font-bold text-gray-900">{user.name}</h1>
+                    {user.isAccountVerified && <VerifiedIcon className="w-7 h-7 text-primary" title="Verified Account" />}
+                  </div>
+                  <p className="text-gray-500 mt-1">Joined {user.joinedDate}</p>
+                  <div className="flex items-center mt-2 justify-center md:justify-start">
+                    <span className="font-bold text-green-600 mr-4 bg-green-100 px-3 py-1 rounded-full">{user.points || 0} Points</span>
+                    {renderStars(averageRating)}
+                    {totalReviews > 0 ? (
+                      <>
+                        <span className="ml-2 text-gray-600 font-semibold">{averageRating.toFixed(1)}</span>
+                        <span className="ml-1 text-gray-500">({totalReviews} reviews)</span>
+                      </>
+                    ) : (
+                      <span className="ml-2 text-gray-500">No reviews yet</span>
+                    )}
+                  </div>
+                  <p className="text-gray-700 mt-4 max-w-xl text-center md:text-left">{user.bio}</p>
+                </>
+              )}
               <div className="mt-4 text-center md:text-left flex flex-col md:flex-row items-center justify-center md:justify-start gap-4">
+                {isCurrentUser && !isEditingProfile && (
+                  <button onClick={() => setIsEditingProfile(true)} className="bg-gray-100 text-gray-800 font-semibold px-6 py-2 rounded-md shadow hover:bg-gray-200 transition-transform transform hover:scale-105">
+                    Edit Profile
+                  </button>
+                )}
                 {isCurrentUser ? (
                   <>
                     <button onClick={() => setIsModalOpen(true)} className="bg-secondary text-white font-semibold px-6 py-2 rounded-md shadow-md hover:bg-secondary/90 transition-transform transform hover:scale-105">
@@ -132,7 +179,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                               <p className="text-sm text-gray-500">Status: <span className="font-semibold capitalize">{req.status}</span></p>
                             </div>
                             {req.status === RequestStatus.PENDING && onRequestAction && (
-                              <div className="flex space-x-2">
+                              <div className="flex space-x-2 mt-2 sm:mt-0">
                                 <button 
                                   onClick={() => onRequestAction(req.id, 'accepted')}
                                   className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
@@ -146,6 +193,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                   Reject
                                 </button>
                               </div>
+                            )}
+                            {req.status === RequestStatus.ACCEPTED && (
+                                <div className="flex space-x-2 mt-2 sm:mt-0">
+                                  {onStartChatWithUser && (
+                                    <button 
+                                      onClick={() => onStartChatWithUser(req.requesterId)}
+                                      className="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary/90 transition-colors"
+                                    >
+                                      Chat with Requester
+                                    </button>
+                                  )}
+                                  {onViewListing && (
+                                    <button 
+                                      onClick={() => onViewListing(req.listingId)}
+                                      className="bg-gray-100 text-gray-800 border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors"
+                                    >
+                                      View Listing
+                                    </button>
+                                  )}
+                                </div>
                             )}
                           </div>
                         </li>
@@ -170,6 +237,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                               </p>
                               <p className="text-sm text-gray-500">Status: <span className="font-semibold capitalize">{req.status}</span></p>
                             </div>
+                            {req.status === RequestStatus.ACCEPTED && (
+                                <div className="flex space-x-2 mt-2 sm:mt-0">
+                                  {onStartChatWithUser && (
+                                    <button 
+                                      onClick={() => onStartChatWithUser(req.ownerId)}
+                                      className="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary/90 transition-colors"
+                                    >
+                                      Chat with Owner
+                                    </button>
+                                  )}
+                                  {onViewListing && (
+                                    <button 
+                                      onClick={() => onViewListing(req.listingId)}
+                                      className="bg-gray-100 text-gray-800 border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors"
+                                    >
+                                      View Listing
+                                    </button>
+                                  )}
+                                </div>
+                            )}
                           </div>
                         </li>
                       ))}

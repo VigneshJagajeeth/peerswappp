@@ -16,6 +16,8 @@ interface HeaderProps {
   onMyAccount: () => void;
   onFilterSelect: (filter: FilterType) => void;
   onGoHome: () => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
 }
 
 // Helper Components (defined outside the main component to prevent re-creation on render)
@@ -99,26 +101,10 @@ const Header: React.FC<HeaderProps> = ({
   onMyAccount, 
   onFilterSelect,
   onGoHome,
+  isDarkMode,
+  toggleDarkMode,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    // Check initial preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDarkMode(true);
-      document.body.classList.add('dark');
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    if (!isDarkMode) {
-      document.body.classList.add('dark');
-    } else {
-      document.body.classList.remove('dark');
-    }
-  };
 
   const handleNavClick = (filter: FilterType) => {
     onFilterSelect(filter);

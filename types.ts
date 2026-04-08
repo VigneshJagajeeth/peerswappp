@@ -24,7 +24,7 @@ export interface Listing {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
+  imageUrl?: string;
   listingType: ListingType;
   category?: string;
   location?: string;
@@ -32,6 +32,7 @@ export interface Listing {
   isVerified?: boolean; // For skills
   paymentType: PaymentType;
   pointsPrice?: number;
+  pointsPriceDuration?: 'hour' | 'day' | 'week' | 'month' | 'flat';
   skillPrice?: string; 
   userId: string;
   userName: string;

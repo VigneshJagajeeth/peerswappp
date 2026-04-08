@@ -15,7 +15,9 @@ const AddListingModal: React.FC<AddListingModalProps> = ({ onAdd, onClose }) => 
   const [listingType, setListingType] = useState<ListingType>(ListingType.SALE);
   const [paymentType, setPaymentType] = useState<PaymentType>(PaymentType.POINTS);
   const [pointsPrice, setPointsPrice] = useState('');
+  const [pointsPriceDuration, setPointsPriceDuration] = useState<'hour' | 'day' | 'week' | 'month' | 'flat'>('day');
   const [skillPrice, setSkillPrice] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,8 +36,15 @@ const AddListingModal: React.FC<AddListingModalProps> = ({ onAdd, onClose }) => 
       paymentType,
     };
 
+    if (imageUrl) {
+      data.imageUrl = imageUrl;
+    }
+
     if (paymentType === PaymentType.POINTS || paymentType === PaymentType.BOTH) {
       data.pointsPrice = parseFloat(pointsPrice);
+      if (listingType === ListingType.RENTAL) {
+        data.pointsPriceDuration = pointsPriceDuration;
+      }
     }
     if (paymentType === PaymentType.SKILL || paymentType === PaymentType.BOTH) {
       data.skillPrice = skillPrice;
@@ -79,6 +88,17 @@ const AddListingModal: React.FC<AddListingModalProps> = ({ onAdd, onClose }) => 
               rows={3}
               className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
               required
+            />
+          </div>
+          <div>
+            <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Image URL (Optional)</label>
+            <input
+              type="url"
+              id="imageUrl"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="e.g., https://example.com/image.jpg"
+              className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -137,19 +157,38 @@ const AddListingModal: React.FC<AddListingModalProps> = ({ onAdd, onClose }) => 
           </div>
           
           {(paymentType === PaymentType.POINTS || paymentType === PaymentType.BOTH) && (
-            <div>
-              <label htmlFor="pointsPrice" className="block text-sm font-medium text-gray-700">Points Price</label>
-              <input
-                type="number"
-                id="pointsPrice"
-                value={pointsPrice}
-                onChange={(e) => setPointsPrice(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary"
-                placeholder="e.g., 50"
-                min="0"
-                step="1"
-                required
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="pointsPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Points Price</label>
+                <input
+                  type="number"
+                  id="pointsPrice"
+                  value={pointsPrice}
+                  onChange={(e) => setPointsPrice(e.target.value)}
+                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                  placeholder="e.g., 50"
+                  min="0"
+                  step="1"
+                  required
+                />
+              </div>
+              {listingType === ListingType.RENTAL && (
+                <div>
+                  <label htmlFor="pointsPriceDuration" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration</label>
+                  <select
+                    id="pointsPriceDuration"
+                    value={pointsPriceDuration}
+                    onChange={(e) => setPointsPriceDuration(e.target.value as any)}
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="hour">Per Hour</option>
+                    <option value="day">Per Day</option>
+                    <option value="week">Per Week</option>
+                    <option value="month">Per Month</option>
+                    <option value="flat">Flat Rate</option>
+                  </select>
+                </div>
+              )}
             </div>
           )}
 

@@ -1,6 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 
-const Starfield: React.FC = () => {
+interface StarfieldProps {
+  isDarkMode: boolean;
+}
+
+const Starfield: React.FC<StarfieldProps> = ({ isDarkMode }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -41,11 +45,12 @@ const Starfield: React.FC = () => {
     initStars();
 
     const draw = () => {
-      ctx.fillStyle = '#050510'; // Deep space background
+      // Deep space background for dark mode, very light sky blue/white for light mode
+      ctx.fillStyle = isDarkMode ? '#050510' : '#f0f4f8'; 
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw stars
-      ctx.fillStyle = 'white';
+      // Draw stars (white in dark mode, dark slate in light mode)
+      ctx.fillStyle = isDarkMode ? 'white' : '#1e293b';
       stars.forEach((star) => {
         star.z -= 2;
         if (star.z <= 0) {
@@ -86,7 +91,8 @@ const Starfield: React.FC = () => {
         ctx.beginPath();
         ctx.moveTo(star.x, star.y);
         ctx.lineTo(star.x + star.length, star.y - star.length);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        const colorPrefix = isDarkMode ? '255, 255, 255' : '30, 41, 59';
+        ctx.strokeStyle = `rgba(${colorPrefix}, ${star.opacity})`;
         ctx.lineWidth = 2;
         ctx.stroke();
       });
@@ -100,9 +106,9 @@ const Starfield: React.FC = () => {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animationFrameId);
     };
-  }, []);
+  }, [isDarkMode]);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-cover z-0" />;
+  return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full object-cover -z-10" />;
 };
 
 export default Starfield;
