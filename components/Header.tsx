@@ -120,10 +120,10 @@ const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <button onClick={onGoHome} className="flex items-center space-x-2 group">
-                <div className="bg-gradient-to-br from-primary to-accent p-2 rounded-xl shadow-md group-hover:shadow-lg transition-all duration-300 transform group-hover:scale-105">
+                <div className="bg-gradient-to-br from-indigo-500 to-blue-500 p-2 rounded-xl shadow-md group-hover:shadow-lg transition-all duration-300 transform group-hover:scale-105">
                   <ArrowRightLeft className="h-6 w-6 text-white" strokeWidth={2.5} />
                 </div>
-                <span className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent tracking-tight">PeerSwap</span>
+                <span className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-500 dark:from-indigo-400 dark:to-blue-400 tracking-tight">PeerSwap</span>
               </button>
             </div>
             <div className="hidden md:block">
