@@ -511,25 +511,10 @@ const App: React.FC = () => {
       if (action === 'accepted') {
         const listingDoc = allListings.find(l => l.id === requestToUpdate.listingId);
         if (listingDoc) {
-          if (listingDoc.listingType === ListingType.SALE) {
-            await updateDoc(doc(db, 'listings', listingDoc.id), { status: 'sold' });
-            const pointsPrice = listingDoc.pointsPrice || 0;
-            if (pointsPrice > 0 && currentUser) {
-               try {
-                 await updateDoc(doc(db, 'users', currentUser.uid), { points: increment(pointsPrice) });
-               } catch (e) {
-                 console.error('Points increment failed (owner might need rule updates)', e);
-               }
-               try {
-                 await updateDoc(doc(db, 'users', requestToUpdate.requesterId), { points: increment(-pointsPrice) });
-               } catch (e) {
-                 console.error('Points decrement failed (lack of permission to write to other user)', e);
-               }
-            }
+          if (listingDoc.listingType === ListingType.SALE || listingDoc.listingType === ListingType.SKILL) {
+            await updateDoc(doc(db, 'listings', listingDoc.id), { status: 'in_progress' });
           } else if (listingDoc.listingType === ListingType.RENTAL) {
             await updateDoc(doc(db, 'listings', listingDoc.id), { status: 'rented', rentedToUserId: requestToUpdate.requesterId });
-          } else if (listingDoc.listingType === ListingType.SKILL) {
-            await updateDoc(doc(db, 'listings', listingDoc.id), { status: 'in_progress' });
           }
         }
       }
@@ -587,6 +572,16 @@ const App: React.FC = () => {
           if (finalAcceptedOwner && finalAcceptedReq) {
              updates.status = RequestStatus.COMPLETED;
              updates.completedAt = new Date().toISOString();
+
+             const listingDoc = allListings.find(l => l.id === req.listingId);
+             if (listingDoc && listingDoc.listingType === ListingType.SALE) {
+                 const pointsPrice = listingDoc.pointsPrice || 0;
+                 if (pointsPrice > 0) {
+                    try { await updateDoc(doc(db, 'users', req.ownerId), { points: increment(pointsPrice) }); } catch(e) { console.error(e) }
+                    try { await updateDoc(doc(db, 'users', req.requesterId), { points: increment(-pointsPrice) }); } catch(e) { console.error(e) }
+                 }
+             }
+
              if (isOwner) {
                 const wantsToRelist = window.confirm("Transaction Completed successfully!\n\nDo you want to instantly relist your item to the active marketplace? (Press Cancel to keep it as a draft in your profile)");
                 await updateDoc(doc(db, 'listings', req.listingId), { status: wantsToRelist ? 'active' : 'draft' }); 

@@ -97,11 +97,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const renderSkillSwapButtons = (req: ListingRequest, isOwner: boolean) => {
     if (!onSkillSwapAction) return null;
     const listing = allListings.find(l => l.id === req.listingId);
-    if (!listing || listing.listingType !== 'Skill Exchange') return null;
+    if (!listing || (listing.listingType !== 'Skill Exchange' && listing.listingType !== 'For Sale')) return null;
+
+    const isSale = listing.listingType === 'For Sale';
+    const startTooltip = isSale ? "Begin Transaction" : "Start Process";
+    const submitTooltip = isSale ? (isOwner ? "Mark as Supplied/Sold" : "Confirm Received") : "Submit Work";
+    const acceptTooltip = isSale ? "Finalize Sale" : "Accept Work";
+    const rejectTooltip = isSale ? "Dispute/Cancel" : "Not Satisfied";
 
     if (req.status === 'accepted') {
       return (
-        <button onClick={() => onSkillSwapAction(req.id, 'START', isOwner)} title="Start Process" className="p-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-full transition shadow-sm">
+        <button onClick={() => onSkillSwapAction(req.id, 'START', isOwner)} title={startTooltip} className="p-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-full transition shadow-sm">
           <Play className="w-4 h-4" />
         </button>
       );
@@ -113,7 +119,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       
       if (!myCompletion) {
         return (
-          <button onClick={() => onSkillSwapAction(req.id, 'SUBMIT', isOwner)} title="Submit Work" className="p-2 border border-primary text-primary hover:bg-primary hover:text-white rounded-full transition shadow-sm">
+          <button onClick={() => onSkillSwapAction(req.id, 'SUBMIT', isOwner)} title={submitTooltip} className="p-2 border border-primary text-primary hover:bg-primary hover:text-white rounded-full transition shadow-sm">
             <Upload className="w-4 h-4" />
           </button>
         );
@@ -123,14 +129,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
         // Both submitted!
         const myAcceptance = isOwner ? req.acceptedByOwner : req.acceptedByRequester;
         if (myAcceptance) {
-          return <span className="text-xs text-green-500 font-semibold px-2 py-1 flex items-center"><CheckCircle2 className="w-3 h-3 mr-1" /> Accepted</span>;
+          return <span className="text-xs text-green-500 font-semibold px-2 py-1 flex items-center"><CheckCircle2 className="w-3 h-3 mr-1" /> {isSale ? "Confirmed" : "Accepted"}</span>;
         }
         return (
           <div className="flex gap-2">
-            <button onClick={() => onSkillSwapAction(req.id, 'ACCEPT', isOwner)} title="Accept Work" className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition shadow-sm">
+            <button onClick={() => onSkillSwapAction(req.id, 'ACCEPT', isOwner)} title={acceptTooltip} className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition shadow-sm">
               <Check className="w-4 h-4" />
             </button>
-            <button onClick={() => onSkillSwapAction(req.id, 'REJECT', isOwner)} title="Not Satisfied" className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition shadow-sm">
+            <button onClick={() => onSkillSwapAction(req.id, 'REJECT', isOwner)} title={rejectTooltip} className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition shadow-sm">
               <XCircle className="w-4 h-4" />
             </button>
           </div>
