@@ -52,6 +52,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const [editName, setEditName] = useState(user.name);
   const [editBio, setEditBio] = useState(user.bio);
   const [editAvatarUrl, setEditAvatarUrl] = useState(user.avatarUrl);
+  
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
 
   const totalReviews = user.totalReviews || 0;
   const averageRating = user.averageRating || 0;
@@ -70,16 +74,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   };
   
   const handleLeaveReview = () => {
-    const ratingStr = window.prompt("Leave a rating from 1 to 5:");
-    if (!ratingStr) return;
-    const rating = parseInt(ratingStr);
-    if (rating < 1 || rating > 5 || isNaN(rating)) {
-       window.alert("Invalid rating");
-       return;
-    }
-    const comment = window.prompt("Leave a short comment:");
-    // In a real app we would call an onLeaveReview callback to update Firebase
-    window.alert(`Review submitted! Rating: ${rating}/5\nComment: ${comment}`);
+    setReviewRating(0);
+    setReviewComment("");
+    setIsReviewOpen(true);
   };
   
   const renderStars = (rating: number) => {
@@ -147,17 +144,54 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   return (
     <>
       {isModalOpen && <AddListingModal onAdd={handleAddListing} onClose={() => setIsModalOpen(false)} />}
-      <div className="bg-gray-50">
+      
+      {isReviewOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-sm w-full p-6 relative border border-gray-100 dark:border-gray-800 animate-slide-up">
+            <h2 className="text-xl font-bold mb-4 dark:text-white text-center">Review {user.name.split(' ')[0]}</h2>
+            <div className="flex space-x-2 mb-6 justify-center">
+               {[1, 2, 3, 4, 5].map(star => (
+                 <button key={star} onClick={() => setReviewRating(star)} className="focus:outline-none transition-transform hover:scale-110">
+                    <StarIcon className={`w-10 h-10 ${reviewRating >= star ? 'text-yellow-400 drop-shadow-md' : 'text-gray-300 dark:text-gray-700'}`} filled={reviewRating >= star} />
+                 </button>
+               ))}
+            </div>
+            <textarea
+               value={reviewComment}
+               onChange={e => setReviewComment(e.target.value)}
+               placeholder="Leave a comment (optional)..."
+               className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 mb-5 focus:ring-2 focus:outline-none focus:ring-primary dark:text-white text-sm"
+               rows={3}
+            />
+            <div className="flex gap-3 justify-end">
+               <button onClick={() => setIsReviewOpen(false)} className="px-5 py-2.5 font-semibold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Cancel</button>
+               <button 
+                  onClick={() => {
+                     window.alert(`Review Submitted!\nRating: ${reviewRating}\nComment: ${reviewComment}`);
+                     setIsReviewOpen(false);
+                  }}
+                  disabled={reviewRating === 0}
+                  className="px-6 py-2.5 font-bold bg-primary text-white rounded-xl shadow-lg hover:bg-primary/90 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 transition-all"
+               >
+                 Submit
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-gray-50 dark:bg-transparent min-h-screen">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
-            <button onClick={onBack} className="text-primary hover:underline font-semibold">
+            <button onClick={onBack} className="text-primary hover:text-primary/80 font-bold transition-colors">
               &larr; Back to Marketplace
             </button>
           </div>
           
           {/* Profile Header */}
-          <div className="bg-white p-8 rounded-xl shadow-md mb-8 md:flex md:items-center md:space-x-8">
-            <div className="md:flex-shrink-0 text-center md:text-left">
+          <div className="bg-white/90 dark:bg-[#0B0B1A]/90 backdrop-blur-md p-8 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-800 mb-8 md:flex md:items-center md:space-x-8 relative overflow-hidden group">
+            <div className="absolute -top-32 -right-32 w-80 h-80 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full blur-[80px] group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
+            <div className="md:flex-shrink-0 text-center md:text-left relative z-10">
               <img 
                 className="h-32 w-32 rounded-full object-cover mx-auto md:mx-0" 
                 src={user.avatarUrl} 
@@ -223,10 +257,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                   </>
                 ) : (
                   <>
-                    <button onClick={onStartChat} className="bg-primary text-white font-semibold px-6 py-2 rounded-md shadow-md hover:bg-primary/90 transition-transform transform hover:scale-105">
+                    <button onClick={onStartChat} className="bg-primary text-white font-semibold px-6 py-2 rounded-md shadow flex items-center hover:bg-primary/90 transition-transform transform hover:scale-105 border border-primary">
                       Chat with {user.name.split(' ')[0]}
                     </button>
-                    <button onClick={handleLeaveReview} className="bg-white text-primary border-2 border-primary font-semibold px-6 py-2 rounded-md shadow flex items-center hover:bg-primary/5 transition-transform transform hover:scale-105">
+                    <button onClick={handleLeaveReview} className="bg-white dark:bg-gray-800 text-primary border border-primary font-semibold px-6 py-2 rounded-md shadow flex items-center hover:bg-primary/5 transition-transform transform hover:scale-105">
                       <StarIcon className="w-5 h-5 mr-1" /> Leave Review
                     </button>
                   </>

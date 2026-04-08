@@ -563,7 +563,12 @@ const App: React.FC = () => {
           if (finalAcceptedOwner && finalAcceptedReq) {
              updates.status = RequestStatus.COMPLETED;
              updates.completedAt = new Date().toISOString();
-             await updateDoc(doc(db, 'listings', req.listingId), { status: 'draft' }); 
+             if (isOwner) {
+                const wantsToRelist = window.confirm("Transaction Completed successfully!\n\nDo you want to instantly relist your item to the active marketplace? (Press Cancel to keep it as a draft in your profile)");
+                await updateDoc(doc(db, 'listings', req.listingId), { status: wantsToRelist ? 'active' : 'draft' }); 
+             } else {
+                await updateDoc(doc(db, 'listings', req.listingId), { status: 'draft' }); 
+             }
           }
           break;
         case 'REJECT':
