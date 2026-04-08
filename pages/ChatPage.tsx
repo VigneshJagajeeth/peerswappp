@@ -53,8 +53,9 @@ const ChatPage: React.FC<ChatPageProps> = ({ currentUser, otherUserId, otherUser
         createdAt: new Date().toISOString()
       });
       setNewMessage('');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
+      alert('Failed to send message: ' + (error.message || 'Unknown error. Check rules.'));
     }
   };
 
