@@ -212,6 +212,13 @@ const App: React.FC = () => {
         createdAt: new Date().toISOString()
       };
 
+      // Remove undefined fields to prevent Firebase errors
+      Object.keys(listingToAdd).forEach(key => {
+        if (listingToAdd[key as keyof typeof listingToAdd] === undefined) {
+          delete listingToAdd[key as keyof typeof listingToAdd];
+        }
+      });
+
       await addDoc(collection(db, 'listings'), listingToAdd);
       
       // We don't need to manually update state because onSnapshot will handle it

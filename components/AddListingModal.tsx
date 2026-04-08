@@ -24,7 +24,7 @@ const AddListingModal: React.FC<AddListingModalProps> = ({ onAdd, onClose }) => 
         return;
     }
     
-    onAdd({
+    const data: any = {
       title,
       description,
       category,
@@ -32,10 +32,19 @@ const AddListingModal: React.FC<AddListingModalProps> = ({ onAdd, onClose }) => 
       tradePreferences,
       listingType,
       paymentType,
-      pointsPrice: (paymentType === PaymentType.POINTS || paymentType === PaymentType.BOTH) ? parseFloat(pointsPrice) : undefined,
-      skillPrice: (paymentType === PaymentType.SKILL || paymentType === PaymentType.BOTH) ? skillPrice : undefined,
-      isVerified: listingType === ListingType.SKILL ? false : undefined,
-    });
+    };
+
+    if (paymentType === PaymentType.POINTS || paymentType === PaymentType.BOTH) {
+      data.pointsPrice = parseFloat(pointsPrice);
+    }
+    if (paymentType === PaymentType.SKILL || paymentType === PaymentType.BOTH) {
+      data.skillPrice = skillPrice;
+    }
+    if (listingType === ListingType.SKILL) {
+      data.isVerified = false;
+    }
+
+    onAdd(data);
   };
 
   return (
