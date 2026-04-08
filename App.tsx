@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection, onSnapshot, doc, getDoc, addDoc, query, orderBy, where, updateDoc, increment } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc, addDoc, query, orderBy, where, updateDoc, increment, deleteDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import Header from './components/Header';
 import Hero from './components/Hero';
@@ -238,6 +238,16 @@ const App: React.FC = () => {
     }
   };
 
+  const handleDeleteListing = async (listingId: string) => {
+    try {
+      await deleteDoc(doc(db, 'listings', listingId));
+      showToast('Listing deleted successfully!');
+      handleBackToMarketplace();
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'listings');
+    }
+  };
+
   const handleListingSelect = (listing: Listing) => {
     setSelectedListing(listing);
     setView('listingDetail');
@@ -411,6 +421,7 @@ const App: React.FC = () => {
                 onUserSelect={handleUserSelect}
                 onPurchase={handlePurchaseListing}
                 onStartChat={() => handleStartChat(selectedListing.userId, selectedListing.userName)}
+                onDelete={handleDeleteListing}
             />
         );
       }

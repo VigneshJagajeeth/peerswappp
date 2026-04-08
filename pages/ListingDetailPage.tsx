@@ -13,9 +13,10 @@ interface ListingDetailPageProps {
   onUserSelect: (userId: string) => void;
   onPurchase: (listingId: string) => void;
   onStartChat?: () => void;
+  onDelete?: (listingId: string) => void;
 }
 
-const ListingDetailPage: React.FC<ListingDetailPageProps> = ({ listing, currentUser, hasAcceptedRequest, onBack, onUserSelect, onPurchase, onStartChat }) => {
+const ListingDetailPage: React.FC<ListingDetailPageProps> = ({ listing, currentUser, hasAcceptedRequest, onBack, onUserSelect, onPurchase, onStartChat, onDelete }) => {
   const { id, title, description, imageUrl, listingType, category, location, tradePreferences, isVerified, paymentType, pointsPrice, skillPrice, userId, userName, userAvatarUrl } = listing;
 
   const typeColors: { [key in ListingType]: { bg: string; text: string; border: string; } } = {
@@ -30,10 +31,14 @@ const ListingDetailPage: React.FC<ListingDetailPageProps> = ({ listing, currentU
     if (isOwner) {
       return (
         <button 
-          disabled
-          className="w-full bg-gray-300 text-gray-500 font-bold py-3 px-6 rounded-lg cursor-not-allowed"
+          onClick={() => {
+            if (window.confirm('Are you sure you want to delete this listing?')) {
+              onDelete && onDelete(id);
+            }
+          }}
+          className="w-full bg-red-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105"
         >
-          This is your listing
+          Delete Listing
         </button>
       );
     }
