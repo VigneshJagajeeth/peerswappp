@@ -325,14 +325,14 @@ const App: React.FC = () => {
       setLoginModalOpen(true);
       return;
     }
-    changeView('chat', { chat: { id: userId, name: userName } });
+    changeView(view, { chat: { id: userId, name: userName } });
   };
   
   const handleStartChatWithUser = async (userId: string) => {
     if (!currentUser) return;
     const user = await fetchUser(userId);
     if (user) {
-      changeView('chat', { chat: { id: user.uid, name: user.name } });
+      changeView(view, { chat: { id: user.uid, name: user.name } });
     } else {
       showToast('Could not find user profile.');
     }
@@ -547,19 +547,6 @@ const App: React.FC = () => {
             />
         );
       }
-      case 'chat':
-        return currentUser && chatUser && (
-          <ChatPage
-            currentUser={currentUser}
-            otherUserId={chatUser.id}
-            otherUserName={chatUser.name}
-            onBack={() => {
-              if (selectedListing) changeView('listingDetail', { listing: selectedListing });
-              else if (selectedUser) changeView('profile', { profileId: selectedUser.uid });
-              else changeView('marketplace', { profileId: null, listing: null, chat: null });
-            }}
-          />
-        );
       case 'marketplace':
       default:
         if (currentUser) {
@@ -644,6 +631,20 @@ const App: React.FC = () => {
         {renderContent()}
       </main>
       <Footer />
+      {/* Floating Chat Widget */}
+      {currentUser && chatUser && (
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[350px] sm:w-[380px] h-[500px] max-h-[80vh] z-[100] shadow-2xl rounded-2xl overflow-hidden bg-white dark:bg-[#0B0B1A] border border-gray-200 dark:border-gray-800 transition-transform animate-slide-up flex flex-col">
+          <ChatPage
+            currentUser={currentUser}
+            otherUserId={chatUser.id}
+            otherUserName={chatUser.name}
+            onBack={() => {
+              // Close chat completely, keeping current view
+              changeView(view, { chat: null });
+            }}
+          />
+        </div>
+      )}
       {isLoginModalOpen && (
         <LoginModal 
           onLogin={handleLogin}

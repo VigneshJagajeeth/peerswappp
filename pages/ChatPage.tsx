@@ -60,30 +60,26 @@ const ChatPage: React.FC<ChatPageProps> = ({ currentUser, otherUserId, otherUser
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-[#050510] min-h-[calc(100vh-64px)] flex flex-col">
-      {/* Centered Modern Container */}
-      <div className="flex-grow flex flex-col w-full max-w-4xl mx-auto md:border-x border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0B0B1A] shadow-xl relative overflow-hidden">
+    <div className="bg-white dark:bg-[#0B0B1A] h-full flex flex-col relative w-full overflow-hidden">
         
         {/* Sticky Header */}
-        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-sm p-3 sm:p-4 flex items-center sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800">
-          <button onClick={onBack} className="text-primary hover:text-primary/70 font-semibold mr-3 sm:mr-4 flex items-center transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 mr-1">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
-            <span className="hidden sm:inline">Back</span>
-          </button>
-          
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm p-3 flex items-center justify-between sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white font-bold text-lg mr-3 shadow-md border-2 border-white dark:border-gray-800">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white font-bold text-lg mr-3 shadow-sm border-2 border-white dark:border-gray-800">
               {otherUserName.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-gray-800 dark:text-white leading-tight">{otherUserName}</h2>
+              <h2 className="text-base font-bold text-gray-800 dark:text-white leading-tight">{otherUserName}</h2>
               <p className="text-xs text-green-500 font-medium flex items-center">
-                <span className="w-2 h-2 rounded-full bg-green-500 mr-1 animate-pulse"></span> Online
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1 animate-pulse"></span> Online
               </p>
             </div>
           </div>
+          <button onClick={onBack} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         {/* Chat Messages */}
@@ -128,30 +124,28 @@ const ChatPage: React.FC<ChatPageProps> = ({ currentUser, otherUserId, otherUser
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Floating Input Area */}
-        <div className="bg-white/80 dark:bg-gray-900/90 backdrop-blur-xl p-3 sm:p-5 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 z-20">
-          <form onSubmit={handleSendMessage} className="flex space-x-2 sm:space-x-3 max-w-4xl mx-auto relative items-end">
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md p-3 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 z-20">
+          <form onSubmit={handleSendMessage} className="flex space-x-2 relative items-end">
             <div className="flex-grow relative">
               <input
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Message..."
-                className="block w-full border border-gray-300 dark:border-gray-700 rounded-3xl py-3 sm:py-3.5 pl-5 pr-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white shadow-inner transition-all duration-200 text-sm sm:text-base"
+                className="block w-full border border-gray-300 dark:border-gray-700 rounded-full py-2.5 pl-4 pr-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white transition-all text-sm"
               />
             </div>
             <button 
               type="submit"
               disabled={!newMessage.trim()}
-              className="bg-primary text-white rounded-full p-2.5 sm:p-3 h-11 w-11 sm:h-12 sm:w-12 flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-transform active:scale-95 shadow-lg group"
+              className="bg-primary text-white rounded-full p-2 h-10 w-10 flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-transform active:scale-95 shadow-md group"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
                 <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
               </svg>
             </button>
           </form>
         </div>
-      </div>
     </div>
   );
 };
