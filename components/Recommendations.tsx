@@ -35,7 +35,7 @@ const Recommendations: React.FC<RecommendationsProps> = ({ listings, onListingSe
   const currentListing = listings[currentIndex];
 
   return (
-    <section aria-label="Featured Items Carousel" className="relative w-full h-80 md:h-96 bg-gray-900 overflow-hidden">
+    <section aria-label="Featured Items Carousel" className="relative w-full max-w-5xl mx-auto h-64 md:h-80 lg:h-96 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 md:mt-8 mb-8 overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
          {listings.map((listing, index) => (
@@ -58,7 +58,7 @@ const Recommendations: React.FC<RecommendationsProps> = ({ listings, onListingSe
         <p className="max-w-xl mb-6 text-gray-200" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.7)'}}>{currentListing.description.substring(0, 80)}...</p>
         <button 
           onClick={() => onListingSelect(currentListing)}
-          className="bg-secondary text-white font-semibold px-8 py-3 rounded-md shadow-lg hover:bg-secondary/90 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-secondary"
+          className="bg-primary text-white font-semibold px-8 py-3 rounded-full shadow-lg hover:bg-primary/90 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-primary"
         >
           View Details
         </button>
