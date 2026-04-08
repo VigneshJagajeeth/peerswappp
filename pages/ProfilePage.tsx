@@ -98,16 +98,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
               {isEditingProfile ? (
                  <form onSubmit={handleProfileSave} className="space-y-3 mb-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Name</label>
-                      <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary" />
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                      <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} required className="mt-1 block w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Bio</label>
-                      <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary" rows={2}/>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
+                      <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} className="mt-1 block w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary" rows={2}/>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Avatar URL</label>
-                        <input type="url" value={editAvatarUrl} onChange={(e) => setEditAvatarUrl(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary" />
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Avatar URL</label>
+                        <input type="url" value={editAvatarUrl} onChange={(e) => setEditAvatarUrl(e.target.value)} required className="mt-1 block w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary" />
                     </div>
                     <div className="flex gap-2">
                         <button type="submit" className="bg-primary text-white font-semibold px-4 py-2 rounded-md hover:bg-primary/90">Save</button>
