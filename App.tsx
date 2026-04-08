@@ -443,12 +443,16 @@ const App: React.FC = () => {
   };
 
   const recommendedListings = useMemo(() => {
-    const availableListings = currentUser ? allListings.filter(l => l.userId !== currentUser.uid) : allListings;
+    const availableListings = currentUser 
+      ? allListings.filter(l => l.userId !== currentUser.uid && (!l.status || l.status === 'active')) 
+      : allListings.filter(l => (!l.status || l.status === 'active'));
     return availableListings.slice(0, 5);
   }, [allListings, currentUser]);
 
   const filteredListings = useMemo(() => {
-    const availableListings = currentUser ? allListings.filter(l => l.userId !== currentUser.uid) : allListings;
+    const availableListings = currentUser 
+      ? allListings.filter(l => l.userId !== currentUser.uid && (!l.status || l.status === 'active')) 
+      : allListings.filter(l => (!l.status || l.status === 'active'));
     const byCategory = activeFilter === 'ALL'
       ? availableListings
       : availableListings.filter(listing => listing.listingType === activeFilter);
@@ -485,9 +489,29 @@ const App: React.FC = () => {
 
   const handleRequestAction = async (requestId: string, action: 'accepted' | 'rejected') => {
     try {
-      await updateDoc(doc(db, 'requests', requestId), {
-        status: action
-      });
+      const requestToUpdate = incomingRequests.find(r => r.id === requestId);
+      if (!requestToUpdate) return;
+
+      if (action === 'accepted') {
+        const listingDoc = allListings.find(l => l.id === requestToUpdate.listingId);
+        if (listingDoc) {
+          if (listingDoc.listingType === ListingType.SALE) {
+            await updateDoc(doc(db, 'listings', listingDoc.id), { status: 'sold' });
+            const pointsPrice = listingDoc.pointsPrice || 0;
+            if (pointsPrice > 0 && currentUser) {
+               await updateDoc(doc(db, 'users', currentUser.uid), { points: increment(pointsPrice) });
+               await updateDoc(doc(db, 'users', requestToUpdate.requesterId), { points: increment(-pointsPrice) });
+            }
+          } else if (listingDoc.listingType === ListingType.RENTAL) {
+            await updateDoc(doc(db, 'listings', listingDoc.id), { status: 'rented', rentedToUserId: requestToUpdate.requesterId });
+          } else if (listingDoc.listingType === ListingType.SKILL) {
+            await updateDoc(doc(db, 'listings', listingDoc.id), { status: 'in_progress' });
+          }
+        }
+      }
+
+      await updateDoc(doc(db, 'requests', requestId), { status: action });
+      showToast(`Request ${action}!`);
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, 'requests');
     }
@@ -504,6 +528,59 @@ const App: React.FC = () => {
     }
   };
 
+  const handleResumeListing = async (listingId: string) => {
+    try {
+      await updateDoc(doc(db, 'listings', listingId), { status: 'active', rentedToUserId: null });
+      showToast('Listing resumed successfully!');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'listings');
+    }
+  };
+
+  const handleSkillSwapAction = async (requestId: string, actionType: 'START' | 'SUBMIT' | 'ACCEPT' | 'REJECT', isOwner: boolean) => {
+    try {
+      const requestRef = doc(db, 'requests', requestId);
+      const req = incomingRequests.find(r => r.id === requestId) || outgoingRequests.find(r => r.id === requestId);
+      if (!req) return;
+
+      const updates: any = {};
+      
+      switch (actionType) {
+        case 'START':
+          updates.startedAt = new Date().toISOString();
+          updates.status = RequestStatus.IN_PROGRESS;
+          break;
+        case 'SUBMIT':
+          if (isOwner) updates.completedByOwner = true;
+          else updates.completedByRequester = true;
+          break;
+        case 'ACCEPT':
+          if (isOwner) updates.acceptedByOwner = true;
+          else updates.acceptedByRequester = true;
+          
+          const finalAcceptedOwner = isOwner ? true : req.acceptedByOwner;
+          const finalAcceptedReq = !isOwner ? true : req.acceptedByRequester;
+          if (finalAcceptedOwner && finalAcceptedReq) {
+             updates.status = RequestStatus.COMPLETED;
+             updates.completedAt = new Date().toISOString();
+             await updateDoc(doc(db, 'listings', req.listingId), { status: 'active' }); 
+          }
+          break;
+        case 'REJECT':
+          updates.completedByOwner = false;
+          updates.completedByRequester = false;
+          updates.acceptedByOwner = false;
+          updates.acceptedByRequester = false;
+          break;
+      }
+      
+      await updateDoc(requestRef, updates);
+      showToast('Skill Swap updated successfully!');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'requests');
+    }
+  };
+
   const renderContent = () => {
     switch(view) {
       case 'profile':
@@ -511,10 +588,13 @@ const App: React.FC = () => {
           <ProfilePage 
             user={selectedUser} 
             listings={allListings.filter(l => l.userId === selectedUser.uid)}
+            allListings={allListings}
             incomingRequests={incomingRequests}
             outgoingRequests={outgoingRequests}
             onRequestAction={handleRequestAction}
             onRevokeRequest={handleRevokeRequest}
+            onResumeListing={handleResumeListing}
+            onSkillSwapAction={handleSkillSwapAction}
             onBack={handleBackToMarketplace}
             isCurrentUser={selectedUser.uid === currentUser?.uid}
             onAddNewListing={handleAddNewListing}

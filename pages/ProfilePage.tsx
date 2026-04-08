@@ -9,10 +9,13 @@ import AddListingModal from '../components/AddListingModal';
 interface ProfilePageProps {
   user: UserProfile;
   listings: Listing[];
+  allListings?: Listing[];
   incomingRequests?: ListingRequest[];
   outgoingRequests?: ListingRequest[];
   onRequestAction?: (requestId: string, action: 'accepted' | 'rejected') => void;
   onRevokeRequest?: (requestId: string) => void;
+  onResumeListing?: (listingId: string) => void;
+  onSkillSwapAction?: (requestId: string, action: 'START' | 'SUBMIT' | 'ACCEPT' | 'REJECT', isOwner: boolean) => void;
   onBack: () => void;
   isCurrentUser: boolean;
   onAddNewListing: (listing: Omit<Listing, 'id' | 'userId' | 'userName' | 'userAvatarUrl' | 'imageUrl' | 'createdAt'>) => void;
@@ -27,10 +30,13 @@ interface ProfilePageProps {
 const ProfilePage: React.FC<ProfilePageProps> = ({ 
   user, 
   listings, 
+  allListings = [],
   incomingRequests = [], 
   outgoingRequests = [], 
   onRequestAction, 
   onRevokeRequest,
+  onResumeListing,
+  onSkillSwapAction,
   onBack, 
   isCurrentUser, 
   onAddNewListing, 
@@ -70,9 +76,58 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   };
 
   const handleUserSelectOnCard = (userId: string) => {
-      // Clicking on the user card from their own profile page should not navigate.
       if (isCurrentUser) return;
   }
+
+  const renderSkillSwapButtons = (req: ListingRequest, isOwner: boolean) => {
+    if (!onSkillSwapAction) return null;
+    const listing = allListings.find(l => l.id === req.listingId);
+    if (!listing || listing.listingType !== 'Skill Exchange') return null;
+
+    if (req.status === 'accepted') {
+      return (
+        <button onClick={() => onSkillSwapAction(req.id, 'START', isOwner)} className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition shadow">
+          Start Process
+        </button>
+      );
+    }
+    
+    if (req.status === 'in_progress') {
+      const myCompletion = isOwner ? req.completedByOwner : req.completedByRequester;
+      const theirCompletion = isOwner ? req.completedByRequester : req.completedByOwner;
+      
+      if (!myCompletion) {
+        return (
+          <button onClick={() => onSkillSwapAction(req.id, 'SUBMIT', isOwner)} className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition shadow">
+            Submit Work
+          </button>
+        );
+      } else if (!theirCompletion) {
+        return <span className="text-sm text-gray-500 italic px-2 py-1">Waiting for other party to submit...</span>;
+      } else {
+        // Both submitted!
+        const myAcceptance = isOwner ? req.acceptedByOwner : req.acceptedByRequester;
+        if (myAcceptance) {
+          return <span className="text-sm text-green-500 font-semibold px-2 py-1">You accepted. Waiting for other...</span>;
+        }
+        return (
+          <div className="flex gap-2">
+            <button onClick={() => onSkillSwapAction(req.id, 'ACCEPT', isOwner)} className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition shadow">
+              Accept Work
+            </button>
+            <button onClick={() => onSkillSwapAction(req.id, 'REJECT', isOwner)} className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition shadow">
+              Not Satisfied
+            </button>
+          </div>
+        );
+      }
+    }
+    
+    if (req.status === 'completed') {
+      return <span className="text-sm font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">Transaction Complete</span>;
+    }
+    return null;
+  };
 
   return (
     <>
@@ -213,6 +268,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                   View Listing
                                 </button>
                               )}
+                              {renderSkillSwapButtons(req, true)}
                             </div>
                           </div>
                         </li>
@@ -266,6 +322,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                   Revoke
                                 </button>
                               )}
+                              {renderSkillSwapButtons(req, false)}
                             </div>
                           </div>
                         </li>
@@ -284,12 +341,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
               {listings.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                   {listings.map(listing => (
-                    <ListingCard 
-                        key={listing.id} 
-                        listing={listing} 
-                        onUserSelect={handleUserSelectOnCard}
-                        onListingSelect={onListingSelect}
-                    />
+                    <div key={listing.id} className="relative flex flex-col group">
+                      <ListingCard 
+                          listing={listing} 
+                          onUserSelect={handleUserSelectOnCard}
+                          onListingSelect={onListingSelect}
+                      />
+                      {(listing.status === 'rented' || listing.status === 'in_progress') && isCurrentUser && onResumeListing && (
+                        <div className="absolute top-2 right-2 z-10 w-[calc(100%-16px)] flex justify-end">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); onResumeListing(listing.id); }} 
+                              className="bg-indigo-600/90 backdrop-blur text-white text-sm font-bold py-2 px-4 rounded-full shadow-lg hover:bg-indigo-500 hover:scale-105 transition-all w-full text-center"
+                            >
+                              Resume Listing
+                            </button>
+                        </div>
+                      )}
+                      
+                    </div>
                   ))}
                 </div>
               ) : (

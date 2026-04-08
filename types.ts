@@ -76,6 +76,8 @@ export interface ListingRequest {
   startedAt?: string;
   completedByRequester?: boolean;
   completedByOwner?: boolean;
+  acceptedByRequester?: boolean;
+  acceptedByOwner?: boolean;
 }
 
 export interface ChatMessage {
