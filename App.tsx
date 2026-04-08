@@ -135,14 +135,20 @@ const App: React.FC = () => {
 
         const incomingQuery = query(collection(db, 'requests'), where('ownerId', '==', user.uid));
         unsubscribeIncoming = onSnapshot(incomingQuery, (snapshot) => {
-          setIncomingRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ListingRequest)));
+          setIncomingRequests(snapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() } as ListingRequest))
+            .filter(req => req.status !== RequestStatus.REVOKED)
+          );
         }, (error) => {
           handleFirestoreError(error, OperationType.LIST, 'requests');
         });
 
         const outgoingQuery = query(collection(db, 'requests'), where('requesterId', '==', user.uid));
         unsubscribeOutgoing = onSnapshot(outgoingQuery, (snapshot) => {
-          setOutgoingRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ListingRequest)));
+          setOutgoingRequests(snapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() } as ListingRequest))
+            .filter(req => req.status !== RequestStatus.REVOKED)
+          );
         }, (error) => {
           handleFirestoreError(error, OperationType.LIST, 'requests');
         });
@@ -457,10 +463,12 @@ const App: React.FC = () => {
 
   const handleRevokeRequest = async (requestId: string) => {
     try {
-      await deleteDoc(doc(db, 'requests', requestId));
+      await updateDoc(doc(db, 'requests', requestId), {
+        status: RequestStatus.REVOKED
+      });
       showToast('Request revoked successfully.');
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, 'requests');
+      handleFirestoreError(error, OperationType.UPDATE, 'requests');
     }
   };
 
