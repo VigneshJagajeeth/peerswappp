@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { UserProfile, Listing, ListingRequest, RequestStatus } from '../types';
+import { UserProfile, Listing, ListingRequest, RequestStatus, Review } from '../types';
+import { MessageSquare, ExternalLink, X, Check, XCircle, Play, Upload, Clock, CheckCircle2, History as HistoryIcon, Edit } from 'lucide-react';
 import ListingCard from '../components/ListingCard';
 import ReviewCard from '../components/ReviewCard';
 import VerifiedIcon from '../components/icons/VerifiedIcon';
@@ -100,8 +101,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
     if (req.status === 'accepted') {
       return (
-        <button onClick={() => onSkillSwapAction(req.id, 'START', isOwner)} className="bg-primary text-white px-4 py-1.5 rounded-full text-sm hover:bg-primary/90 transition shadow-sm font-medium">
-          Start Process
+        <button onClick={() => onSkillSwapAction(req.id, 'START', isOwner)} title="Start Process" className="p-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-full transition shadow-sm">
+          <Play className="w-4 h-4" />
         </button>
       );
     }
@@ -112,25 +113,25 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       
       if (!myCompletion) {
         return (
-          <button onClick={() => onSkillSwapAction(req.id, 'SUBMIT', isOwner)} className="bg-white text-primary border border-primary px-4 py-1.5 rounded-full text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition shadow-sm font-medium">
-            Submit Work
+          <button onClick={() => onSkillSwapAction(req.id, 'SUBMIT', isOwner)} title="Submit Work" className="p-2 border border-primary text-primary hover:bg-primary hover:text-white rounded-full transition shadow-sm">
+            <Upload className="w-4 h-4" />
           </button>
         );
       } else if (!theirCompletion) {
-        return <span className="text-sm text-primary/70 italic px-2 py-1">Waiting for partner...</span>;
+        return <span className="flex items-center text-xs text-primary/70 italic px-2 py-1"><Clock className="w-3 h-3 mr-1" /> Waiting...</span>;
       } else {
         // Both submitted!
         const myAcceptance = isOwner ? req.acceptedByOwner : req.acceptedByRequester;
         if (myAcceptance) {
-          return <span className="text-sm text-green-500 font-semibold px-2 py-1 flex items-center"><svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> Accepted</span>;
+          return <span className="text-xs text-green-500 font-semibold px-2 py-1 flex items-center"><CheckCircle2 className="w-3 h-3 mr-1" /> Accepted</span>;
         }
         return (
           <div className="flex gap-2">
-            <button onClick={() => onSkillSwapAction(req.id, 'ACCEPT', isOwner)} className="bg-primary text-white px-4 py-1.5 rounded-full text-sm hover:bg-primary/90 transition shadow-sm font-medium">
-              Accept Work
+            <button onClick={() => onSkillSwapAction(req.id, 'ACCEPT', isOwner)} title="Accept Work" className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition shadow-sm">
+              <Check className="w-4 h-4" />
             </button>
-            <button onClick={() => onSkillSwapAction(req.id, 'REJECT', isOwner)} className="bg-red-500 text-white px-4 py-1.5 rounded-full text-sm hover:bg-red-600 transition shadow-sm font-medium">
-              Reject
+            <button onClick={() => onSkillSwapAction(req.id, 'REJECT', isOwner)} title="Not Satisfied" className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition shadow-sm">
+              <XCircle className="w-4 h-4" />
             </button>
           </div>
         );
@@ -138,12 +139,18 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     }
     
     if (req.status === 'completed') {
-      return <span className="text-sm font-bold text-green-600 bg-green-100/50 border border-green-200 px-3 py-1 rounded-full">Completed</span>;
+      return null; // Will show as a badge elsewhere or in History
     }
     return null;
   };
 
   const visibleListings = isCurrentUser ? listings : listings.filter(l => !l.status || l.status === 'active');
+
+  const activeIncoming = incomingRequests.filter(r => r.status && !['completed', 'rejected', 'revoked'].includes(r.status.toLowerCase()));
+  const historyIncoming = incomingRequests.filter(r => r.status && ['completed', 'rejected', 'revoked'].includes(r.status.toLowerCase()));
+  
+  const activeOutgoing = outgoingRequests.filter(r => r.status && !['completed', 'rejected', 'revoked'].includes(r.status.toLowerCase()));
+  const historyOutgoing = outgoingRequests.filter(r => r.status && ['completed', 'rejected', 'revoked'].includes(r.status.toLowerCase()));
 
   return (
     <>
@@ -246,28 +253,28 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                   <p className="text-gray-700 mt-4 max-w-xl text-center md:text-left">{user.bio}</p>
                 </>
               )}
-              <div className="mt-4 text-center md:text-left flex flex-col md:flex-row items-center justify-center md:justify-start gap-4">
+              <div className="mt-4 text-center md:text-left flex flex-row items-center justify-center md:justify-start gap-3">
                 {isCurrentUser && !isEditingProfile && (
-                  <button onClick={() => setIsEditingProfile(true)} className="bg-gray-100 text-gray-800 font-semibold px-6 py-2 rounded-md shadow hover:bg-gray-200 transition-transform transform hover:scale-105">
-                    Edit Profile
+                  <button onClick={() => setIsEditingProfile(true)} title="Edit Profile" className="p-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full shadow hover:bg-gray-200 dark:hover:bg-gray-700 transition transform hover:scale-105 border border-gray-200 dark:border-gray-700">
+                    <Edit className="w-5 h-5" />
                   </button>
                 )}
                 {isCurrentUser ? (
                   <>
-                    <button onClick={() => setIsModalOpen(true)} className="bg-secondary text-white font-semibold px-6 py-2 rounded-md shadow-md hover:bg-secondary/90 transition-transform transform hover:scale-105">
-                      + Add New Listing
+                    <button onClick={() => setIsModalOpen(true)} className="flex items-center px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-full shadow hover:bg-primary/90 transition transform hover:scale-105">
+                       <span className="mr-1.5 text-lg leading-none">+</span> Listing
                     </button>
-                    <button onClick={onAddPoints} className="bg-green-500 text-white font-semibold px-6 py-2 rounded-md shadow-md hover:bg-green-600 transition-transform transform hover:scale-105">
-                      Add Points
+                    <button onClick={onAddPoints} className="flex items-center px-5 py-2.5 bg-green-500 text-white text-sm font-semibold rounded-full shadow border border-green-400 hover:bg-green-600 transition transform hover:scale-105">
+                       <span className="mr-1.5 text-lg leading-none">+</span> Points
                     </button>
                   </>
                 ) : (
                   <>
-                    <button onClick={onStartChat} className="bg-primary text-white font-semibold px-6 py-2 rounded-md shadow flex items-center hover:bg-primary/90 transition-transform transform hover:scale-105 border border-primary">
-                      Chat with {user.name.split(' ')[0]}
+                    <button onClick={onStartChat} title={`Chat with ${user.name}`} className="p-3 bg-primary text-white rounded-full shadow hover:bg-primary/90 transition transform hover:scale-105 border border-primary">
+                       <MessageSquare className="w-5 h-5" />
                     </button>
-                    <button onClick={handleLeaveReview} className="bg-white dark:bg-gray-800 text-primary border border-primary font-semibold px-6 py-2 rounded-md shadow flex items-center hover:bg-primary/5 transition-transform transform hover:scale-105">
-                      <StarIcon className="w-5 h-5 mr-1" /> Leave Review
+                    <button onClick={handleLeaveReview} title="Leave Review" className="p-3 bg-white dark:bg-gray-800 text-yellow-500 border border-gray-200 dark:border-gray-700 rounded-full shadow hover:bg-yellow-50 dark:hover:bg-gray-700 transition transform hover:scale-105">
+                       <StarIcon className="w-5 h-5" filled={true} />
                     </button>
                   </>
                 )}
@@ -282,50 +289,42 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             {isCurrentUser && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Incoming Requests */}
-                <div className="bg-white p-6 rounded-xl shadow-md">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-4">Incoming Requests</h2>
-                  {incomingRequests.length > 0 ? (
-                    <ul className="divide-y divide-gray-200">
-                      {incomingRequests.map(req => (
+                <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-2xl shadow-md relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                  <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Incoming Requests</h2>
+                  {activeIncoming.length > 0 ? (
+                    <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                      {activeIncoming.map(req => (
                         <li key={req.id} className="py-4">
                           <div className="flex justify-between items-center">
                             <div>
-                              <p className="text-sm font-medium text-gray-900">
+                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {req.requesterName} requested "{req.listingTitle}"
                               </p>
-                              <p className="text-sm text-gray-500">Status: <span className="font-semibold capitalize">{req.status}</span></p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
+                                <span className={`w-2 h-2 rounded-full mr-2 ${req.status === 'pending' ? 'bg-yellow-400' : 'bg-blue-400'}`}></span>
+                                <span className="capitalize">{req.status}</span>
+                              </p>
                             </div>
-                            <div className="flex space-x-2 mt-2 sm:mt-0 flex-wrap gap-y-2">
+                            <div className="flex space-x-2 mt-2 sm:mt-0 flex-nowrap items-center">
                               {req.status?.toLowerCase() === 'pending' && onRequestAction && (
                                 <>
-                                  <button 
-                                    onClick={() => onRequestAction(req.id, 'accepted')}
-                                    className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition-colors"
-                                  >
-                                    Accept
+                                  <button onClick={() => onRequestAction(req.id, 'accepted')} title="Accept" className="p-2 bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition">
+                                    <Check className="w-4 h-4" />
                                   </button>
-                                  <button 
-                                    onClick={() => onRequestAction(req.id, 'rejected')}
-                                    className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
-                                  >
-                                    Reject
+                                  <button onClick={() => onRequestAction(req.id, 'rejected')} title="Reject" className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition">
+                                    <X className="w-4 h-4" />
                                   </button>
                                 </>
                               )}
                               {req.status?.toLowerCase() === 'accepted' && onStartChatWithUser && (
-                                <button 
-                                  onClick={() => onStartChatWithUser(req.requesterId)}
-                                  className="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary/90 transition-colors shadow-sm"
-                                >
-                                  Chat with Requester
+                                <button onClick={() => onStartChatWithUser(req.requesterId)} title="Chat with Requester" className="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition">
+                                  <MessageSquare className="w-4 h-4" />
                                 </button>
                               )}
                               {onViewListing && (
-                                <button 
-                                  onClick={() => onViewListing(req.listingId)}
-                                  className="bg-gray-100 text-gray-800 border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors shadow-sm"
-                                >
-                                  View Listing
+                                <button onClick={() => onViewListing(req.listingId)} title="View Listing" className="p-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                                  <ExternalLink className="w-4 h-4" />
                                 </button>
                               )}
                               {renderSkillSwapButtons(req, true)}
@@ -335,51 +334,46 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-gray-500">No incoming requests.</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">No active incoming requests.</p>
                   )}
                 </div>
 
                 {/* Outgoing Requests */}
-                <div className="bg-white p-6 rounded-xl shadow-md">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-4">Outgoing Requests</h2>
-                  {outgoingRequests.length > 0 ? (
-                    <ul className="divide-y divide-gray-200">
-                      {outgoingRequests.map(req => (
+                <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-2xl shadow-md relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
+                  <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Outgoing Requests</h2>
+                  {activeOutgoing.length > 0 ? (
+                    <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                      {activeOutgoing.map(req => (
                         <li key={req.id} className="py-4">
                           <div className="flex justify-between items-center">
                             <div>
-                              <p className="text-sm font-medium text-gray-900">
+                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                 You requested "{req.listingTitle}"
                               </p>
-                              <p className="text-sm text-gray-500">Status: <span className="font-semibold capitalize">{req.status}</span></p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
+                                <span className={`w-2 h-2 rounded-full mr-2 ${req.status === 'pending' ? 'bg-yellow-400' : 'bg-purple-400'}`}></span>
+                                <span className="capitalize">{req.status}</span>
+                              </p>
                             </div>
-                            <div className="flex space-x-2 mt-2 sm:mt-0 flex-wrap gap-y-2">
+                            <div className="flex space-x-2 mt-2 sm:mt-0 flex-nowrap items-center">
                               {req.status?.toLowerCase() === 'accepted' && onStartChatWithUser && (
-                                <button 
-                                  onClick={() => onStartChatWithUser(req.ownerId)}
-                                  className="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary/90 transition-colors shadow-sm"
-                                >
-                                  Chat with Owner
+                                <button onClick={() => onStartChatWithUser(req.ownerId)} title="Chat with Owner" className="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition">
+                                  <MessageSquare className="w-4 h-4" />
                                 </button>
                               )}
                               {onViewListing && (
-                                <button 
-                                  onClick={() => onViewListing(req.listingId)}
-                                  className="bg-gray-100 text-gray-800 border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors shadow-sm"
-                                >
-                                  View Listing
+                                <button onClick={() => onViewListing(req.listingId)} title="View Listing" className="p-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                                  <ExternalLink className="w-4 h-4" />
                                 </button>
                               )}
-                              {req.createdAt && (new Date().getTime() - new Date(req.createdAt).getTime() < 24 * 60 * 60 * 1000) && onRevokeRequest && (
-                                <button 
-                                  onClick={() => {
-                                    if (window.confirm('Are you sure you want to revoke this request?')) {
+                              {req.status === 'pending' && onRevokeRequest && (
+                                <button onClick={() => {
+                                  if (window.confirm('Are you sure you want to revoke this request?')) {
                                       onRevokeRequest(req.id);
-                                    }
-                                  }}
-                                  className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors shadow-sm"
-                                >
-                                  Revoke
+                                  }
+                                }} title="Revoke Request" className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition">
+                                  <X className="w-4 h-4" />
                                 </button>
                               )}
                               {renderSkillSwapButtons(req, false)}
@@ -389,9 +383,30 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-gray-500">No outgoing requests.</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">No active outgoing requests.</p>
                   )}
                 </div>
+                
+                {/* History Block */}
+                <div className="lg:col-span-2 bg-gray-100/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 p-6 rounded-2xl">
+                  <h2 className="text-lg font-bold text-gray-600 dark:text-gray-400 flex items-center mb-4"><HistoryIcon className="w-5 h-5 mr-2" /> Transaction History</h2>
+                  <div className="flex gap-4 flex-wrap">
+                    {historyIncoming.map(req => (
+                       <div key={req.id} className="bg-white/60 dark:bg-gray-800/60 px-3 py-2 rounded-lg text-sm border border-gray-100 dark:border-gray-700">
+                         {req.requesterName} &rarr; "{req.listingTitle}" <span className="font-semibold text-gray-700 dark:text-gray-300 ml-1">({req.status})</span>
+                       </div>
+                    ))}
+                    {historyOutgoing.map(req => (
+                       <div key={req.id} className="bg-white/60 dark:bg-gray-800/60 px-3 py-2 rounded-lg text-sm border border-gray-100 dark:border-gray-700">
+                         Requested "{req.listingTitle}" <span className="font-semibold text-gray-700 dark:text-gray-300 ml-1">({req.status})</span>
+                       </div>
+                    ))}
+                    {(historyIncoming.length === 0 && historyOutgoing.length === 0) && (
+                       <p className="text-sm text-gray-500 italic">No past transactions yet.</p>
+                    )}
+                  </div>
+                </div>
+
               </div>
             )}
 
