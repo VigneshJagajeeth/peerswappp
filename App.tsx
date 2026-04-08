@@ -117,6 +117,49 @@ const App: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  const changeView = (newView: ViewType, updates: { profileId?: string | null, listing?: Listing | null, chat?: {id: string, name: string} | null } = {}, skipHistory = false) => {
+    setView(newView);
+    if ('profileId' in updates) setSelectedProfileId(updates.profileId as string | null);
+    if ('listing' in updates) setSelectedListing(updates.listing as Listing | null);
+    if ('chat' in updates) setChatUser(updates.chat as {id: string, name: string} | null);
+    
+    if (!skipHistory) {
+      const stateObject = {
+        view: newView,
+        profileId: 'profileId' in updates ? updates.profileId : selectedProfileId,
+        listing: 'listing' in updates ? updates.listing : selectedListing,
+        chat: 'chat' in updates ? updates.chat : chatUser
+      };
+      window.history.pushState(stateObject, '', `#${newView}`);
+    }
+  };
+
+  useEffect(() => {
+    if (!window.history.state) {
+      window.history.replaceState({
+        view: 'marketplace',
+        profileId: null,
+        listing: null,
+        chat: null
+      }, '', '#marketplace');
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state) {
+        changeView(event.state.view, {
+          profileId: event.state.profileId,
+          listing: event.state.listing,
+          chat: event.state.chat
+        }, true);
+      } else {
+        changeView('marketplace', { profileId: null, listing: null, chat: null }, true);
+      }
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   useEffect(() => {
     let unsubscribeIncoming: () => void;
     let unsubscribeOutgoing: () => void;
@@ -206,8 +249,7 @@ const App: React.FC = () => {
   const handleLogout = async () => {
     await signOut(auth);
     if (selectedProfileId === currentUser?.uid) {
-      setView('marketplace');
-      setSelectedProfileId(null);
+      changeView('marketplace', { profileId: null });
     }
     setCurrentUser(null);
   };
@@ -217,9 +259,7 @@ const App: React.FC = () => {
       const userProfile = await fetchUser(currentUser.uid);
       if (userProfile) {
         setSelectedUser(userProfile);
-        setSelectedProfileId(currentUser.uid);
-        setSelectedListing(null);
-        setView('profile');
+        changeView('profile', { profileId: currentUser.uid, listing: null });
         window.scrollTo(0, 0);
       }
     }
@@ -256,9 +296,7 @@ const App: React.FC = () => {
     const userProfile = await fetchUser(userId);
     if (userProfile) {
       setSelectedUser(userProfile);
-      setSelectedProfileId(userId);
-      setSelectedListing(null);
-      setView('profile');
+      changeView('profile', { profileId: userId, listing: null });
       window.scrollTo(0, 0);
     }
   };
@@ -274,16 +312,12 @@ const App: React.FC = () => {
   };
 
   const handleListingSelect = (listing: Listing) => {
-    setSelectedListing(listing);
-    setView('listingDetail');
+    changeView('listingDetail', { listing });
     window.scrollTo(0, 0);
   }
   
   const handleBackToMarketplace = () => {
-    setView('marketplace');
-    setSelectedProfileId(null);
-    setSelectedListing(null);
-    setChatUser(null);
+    changeView('marketplace', { profileId: null, listing: null, chat: null });
   };
   
   const handleStartChat = (userId: string, userName: string) => {
@@ -291,16 +325,14 @@ const App: React.FC = () => {
       setLoginModalOpen(true);
       return;
     }
-    setChatUser({ id: userId, name: userName });
-    setView('chat');
+    changeView('chat', { chat: { id: userId, name: userName } });
   };
   
   const handleStartChatWithUser = async (userId: string) => {
     if (!currentUser) return;
     const user = await fetchUser(userId);
     if (user) {
-      setChatUser({ id: user.uid, name: user.name });
-      setView('chat');
+      changeView('chat', { chat: { id: user.uid, name: user.name } });
     } else {
       showToast('Could not find user profile.');
     }
@@ -522,9 +554,9 @@ const App: React.FC = () => {
             otherUserId={chatUser.id}
             otherUserName={chatUser.name}
             onBack={() => {
-              if (selectedListing) setView('listingDetail');
-              else if (selectedUser) setView('profile');
-              else setView('marketplace');
+              if (selectedListing) changeView('listingDetail', { listing: selectedListing });
+              else if (selectedUser) changeView('profile', { profileId: selectedUser.uid });
+              else changeView('marketplace', { profileId: null, listing: null, chat: null });
             }}
           />
         );
